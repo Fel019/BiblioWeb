@@ -76,5 +76,3 @@ BiblioWeb/
 ├── estilos.css # Estilos generales
 └── assets/ # Iconos, imágenes o recursos estáticos
 
-## 🧾 Estructura del Proyecto
-

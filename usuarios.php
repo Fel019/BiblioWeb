@@ -2,181 +2,655 @@
 include 'conexion.php';
 session_start();
 
-// 🔹 Verificamos que el usuario haya iniciado sesión
+// Verificar sesión
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit;
 }
 
-// 🔹 Verificamos el rol (según tu BD)
+// Solo administrador y bibliotecario
 if ($_SESSION['rol'] !== 'administrador' && $_SESSION['rol'] !== 'bibliotecario') {
     header("Location: sin_permiso.php");
     exit;
 }
 
-// 🔹 Insertar nuevo usuario
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
-    $password = md5($_POST['password']);
-    $rol = !empty($_POST['rol']) ? $_POST['rol'] : 'estudiante';
-    $estado = 'activo';
 
-    // Verificar si ya existe el correo
-    $check = $conn->prepare("SELECT COUNT(*) FROM usuarios WHERE correo = :correo");
-    $check->execute([':correo' => $correo]);
+// ======================================================
+// REGISTRAR NUEVO USUARIO
+// ======================================================
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrar_usuario'])) {
+
+    $nombre   = trim($_POST['nombre']);
+    $correo   = trim($_POST['correo']);
+    $password = md5($_POST['password']);
+    $rol      = $_POST['rol'] ?? 'alumno';
+    $estado   = 'activo';
+
+    $rolesPermitidos = [
+        'alumno',
+        'profesor',
+        'administrativo',
+        'bibliotecario',
+        'administrador'
+    ];
+
+    if (!in_array($rol, $rolesPermitidos, true)) {
+        $rol = 'alumno';
+    }
+
+    // Verificar correo duplicado
+    $check = $conn->prepare("
+        SELECT COUNT(*)
+        FROM usuarios
+        WHERE correo = :correo
+    ");
+
+    $check->execute([
+        ':correo' => $correo
+    ]);
+
     if ($check->fetchColumn() > 0) {
-        echo "<script>alert('❌ El correo ya está registrado, elige otro.');</script>";
+
+        $error = "El correo ya está registrado.";
+
     } else {
-        $sql = "INSERT INTO usuarios (nombre, correo, password, rol, estado)
-                VALUES (:nombre, :correo, :password, :rol, :estado)";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            ':nombre' => $nombre,
-            ':correo' => $correo,
-            ':password' => $password,
-            ':rol' => $rol,
-            ':estado' => $estado
-        ]);
-        echo "<script>alert('✅ Usuario registrado correctamente');</script>";
+
+        try {
+
+            $sql = "
+                INSERT INTO usuarios
+                (
+                    nombre,
+                    correo,
+                    password,
+                    rol,
+                    estado
+                )
+                VALUES
+                (
+                    :nombre,
+                    :correo,
+                    :password,
+                    :rol,
+                    :estado
+                )
+            ";
+
+            $stmt = $conn->prepare($sql);
+
+            $stmt->execute([
+                ':nombre'   => $nombre,
+                ':correo'   => $correo,
+                ':password' => $password,
+                ':rol'      => $rol,
+                ':estado'   => $estado
+            ]);
+
+            header("Location: usuarios.php?mensaje=registrado");
+            exit;
+
+        } catch (PDOException $e) {
+
+            $error = "No fue posible registrar el usuario.";
+        }
     }
 }
 
-// 🔹 Eliminar usuario
+
+// ======================================================
+// ELIMINAR USUARIO
+// ======================================================
+
 if (isset($_GET['eliminar'])) {
-    $id = $_GET['eliminar'];
-    $del = $conn->prepare("DELETE FROM usuarios WHERE id = :id");
-    $del->execute([':id' => $id]);
-    header("Location: usuarios.php");
-    exit;
+
+    $id = (int) $_GET['eliminar'];
+
+    // Evitar eliminarse a sí mismo
+    if (isset($_SESSION['id']) && $id === (int) $_SESSION['id']) {
+
+        $error = "No puedes eliminar tu propio usuario mientras tienes la sesión iniciada.";
+
+    } else {
+
+        try {
+
+            $del = $conn->prepare("
+                DELETE FROM usuarios
+                WHERE id = :id
+            ");
+
+            $del->execute([
+                ':id' => $id
+            ]);
+
+            header("Location: usuarios.php?mensaje=eliminado");
+            exit;
+
+        } catch (PDOException $e) {
+
+            $error = "No se puede eliminar este usuario porque tiene préstamos asociados.";
+        }
+    }
 }
+
+
+// ======================================================
+// BUSCAR USUARIOS
+// ======================================================
+
+$where = "";
+$params = [];
+
+if (!empty($_GET['q'])) {
+
+    $q = "%" . trim($_GET['q']) . "%";
+
+    $where = "
+        WHERE nombre LIKE :q
+           OR correo LIKE :q
+    ";
+
+    $params[':q'] = $q;
+}
+
+
+// ======================================================
+// LISTADO DE USUARIOS
+// ======================================================
+
+$sql = "
+    SELECT
+        id,
+        nombre,
+        correo,
+        rol,
+        estado
+    FROM usuarios
+    $where
+    ORDER BY id ASC
+";
+
+$stmtUsuarios = $conn->prepare($sql);
+$stmtUsuarios->execute($params);
+
+$usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Gestión de Usuarios | BiblioWeb</title>
-  <link rel="stylesheet" href="estilos.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Gestión de Usuarios | BiblioWeb</title>
+
+    <link
+        rel="stylesheet"
+        href="estilos.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
 </head>
+
+
 <body>
-  <header class="navbar">
+
+
+<!-- ======================================================
+     NAVBAR
+====================================================== -->
+
+<header class="navbar">
+
     <div class="navbar-left">
-      <i class="fa-solid fa-book-open navbar-logo"></i>
-      <span class="navbar-title">BiblioWeb</span>
+
+        <i class="fa-solid fa-book-open navbar-logo"></i>
+
+        <span class="navbar-title">
+            Colegio Parroquial Nuestra Señora de los Andes
+        </span>
+
     </div>
+
 
     <div class="navbar-center">
-      <nav class="nav-tabs">
-        <a class="<?php echo basename($_SERVER['PHP_SELF']) == 'libros.php' ? 'active' : ''; ?>" href="libros.php">Gestión de Libros</a>
-        <a class="<?php echo basename($_SERVER['PHP_SELF']) == 'prestamos.php' ? 'active' : ''; ?>" href="prestamos.php">Préstamos</a>
 
-        <?php if ($_SESSION['rol'] === 'administrador' || $_SESSION['rol'] === 'bibliotecario'): ?>
-          <a class="<?php echo basename($_SERVER['PHP_SELF']) == 'usuarios.php' ? 'active' : ''; ?>" href="usuarios.php">Usuarios</a>
-          <a class="<?php echo basename($_SERVER['PHP_SELF']) == 'reportes.php' ? 'active' : ''; ?>" href="reportes.php">Reportes</a>
-        <?php endif; ?>
-      </nav>
+        <nav class="nav-tabs">
+
+            <a href="libros.php">
+                Gestión de Libros
+            </a>
+
+            <a href="prestamos.php">
+                Préstamos
+            </a>
+
+            <a
+                href="usuarios.php"
+                class="active">
+                Usuarios
+            </a>
+
+            <a href="reportes.php">
+                Reportes
+            </a>
+
+        </nav>
+
     </div>
+
 
     <div class="navbar-right">
-      <span><?php echo ucfirst($_SESSION['rol']); ?>: <?php echo $_SESSION['usuario']; ?></span>
-      <a href="logout.php" class="btn btn-small btn-primary">
-        <i class="fa-solid fa-right-from-bracket"></i> Salir
-      </a>
-    </div>
-  </header>
 
-  <main class="main-content usuarios-layout">
-    <!-- 🔹 Columna izquierda -->
+        <span>
+
+            <?php
+            echo ucfirst(
+                htmlspecialchars($_SESSION['rol'])
+            );
+            ?>:
+
+            <strong>
+                <?php
+                echo htmlspecialchars(
+                    $_SESSION['usuario']
+                );
+                ?>
+            </strong>
+
+        </span>
+
+
+        <a
+            href="logout.php"
+            class="btn btn-small btn-primary">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            Salir
+
+        </a>
+
+    </div>
+
+</header>
+
+
+
+<!-- ======================================================
+     CONTENIDO
+====================================================== -->
+
+<main class="main-content usuarios-layout">
+
+
+    <!-- ======================================================
+         COLUMNA IZQUIERDA
+    ====================================================== -->
+
     <div class="usuarios-sidebar">
-      <div class="card">
-        <h3>🔍 Buscar Usuario</h3>
-        <form method="GET" action="usuarios.php">
-          <input type="text" name="q" placeholder="Nombre o correo..."
-                 value="<?php echo isset($_GET['q']) ? $_GET['q'] : ''; ?>">
-          <button type="submit" class="btn btn-buscar">🔍Buscar</button>
-        </form>
-      </div>
 
-      <div class="card">
-        <h3>👤 Registrar Nuevo Usuario</h3>
-        <form method="POST" action="">
-          <input type="text" name="nombre" placeholder="Nombre completo" required>
-          <input type="email" name="correo" placeholder="Correo electrónico" required>
-          <select name="rol" required>
-            <option value="" disabled selected>Selecciona un rol</option>
-            <option value="estudiante">Estudiante</option>
-            <option value="profesor">Profesor</option>
-            <option value="administrativo">Administrativo</option>
-            <option value="bibliotecario">Bibliotecario</option>
-            <option value="administrador">Administrador</option>
-          </select>
-          <input type="password" name="password" placeholder="Contraseña" required>
-          <button type="submit" class="btn btn-success">
-            <i class="fa-solid fa-user-plus"></i> Registrar
-          </button>
-        </form>
-      </div>
+
+        <!-- BUSCAR USUARIO -->
+
+        <div class="card">
+
+            <h3>
+                🔍 Buscar Usuario
+            </h3>
+
+
+            <form
+                method="GET"
+                action="usuarios.php">
+
+
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Nombre o correo..."
+                    value="<?php
+                        echo isset($_GET['q'])
+                            ? htmlspecialchars($_GET['q'])
+                            : '';
+                    ?>"
+                >
+
+
+                <button
+                    type="submit"
+                    class="btn btn-buscar">
+
+                    🔍 Buscar
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+
+        <!-- REGISTRAR USUARIO -->
+
+        <div class="card">
+
+            <h3>
+                👤 Registrar Nuevo Usuario
+            </h3>
+
+
+            <?php if (!empty($error)): ?>
+
+                <div class="alert alert-danger">
+
+                    ❌ <?php echo htmlspecialchars($error); ?>
+
+                </div>
+
+            <?php endif; ?>
+
+
+            <?php if (isset($_GET['mensaje']) && $_GET['mensaje'] === 'registrado'): ?>
+
+                <div class="alert alert-success">
+
+                    ✅ Usuario registrado correctamente.
+
+                </div>
+
+            <?php endif; ?>
+
+
+            <?php if (isset($_GET['mensaje']) && $_GET['mensaje'] === 'eliminado'): ?>
+
+                <div class="alert alert-success">
+
+                    ✅ Usuario eliminado correctamente.
+
+                </div>
+
+            <?php endif; ?>
+
+
+            <form
+                method="POST"
+                action="usuarios.php">
+
+
+                <input
+                    type="hidden"
+                    name="registrar_usuario"
+                    value="1"
+                >
+
+
+                <input
+                    type="text"
+                    name="nombre"
+                    placeholder="Nombre completo"
+                    required
+                >
+
+
+                <input
+                    type="email"
+                    name="correo"
+                    placeholder="Correo electrónico"
+                    required
+                >
+
+
+                <select
+                    name="rol"
+                    required>
+
+                    <option
+                        value=""
+                        disabled
+                        selected>
+
+                        Selecciona un rol
+
+                    </option>
+
+
+                    <option value="alumno">
+                        Alumno
+                    </option>
+
+
+                    <option value="profesor">
+                        Profesor
+                    </option>
+
+
+                    <option value="administrativo">
+                        Administrativo
+                    </option>
+
+
+                    <option value="bibliotecario">
+                        Bibliotecario
+                    </option>
+
+
+                    <option value="administrador">
+                        Administrador
+                    </option>
+
+                </select>
+
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    <i class="fa-solid fa-user-plus"></i>
+
+                    Registrar
+
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
-    <!-- 🔹 Columna derecha -->
+
+
+    <!-- ======================================================
+         LISTADO DE USUARIOS
+    ====================================================== -->
+
     <div class="usuarios-main card">
-      <h3>Usuarios Registrados</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>CORREO</th>
-            <th>ROL</th>
-            <th>ESTADO</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php
-          $where = "";
-          $params = [];
 
-          if (!empty($_GET['q'])) {
-              $q = "%" . $_GET['q'] . "%";
-              $where = "WHERE nombre LIKE :q OR correo LIKE :q";
-              $params[':q'] = $q;
-          }
+        <h3>
+            Usuarios Registrados
+        </h3>
 
-          // 🔹 Consulta ajustada a tu base de datos real
-          $sql = "SELECT id, nombre, correo, rol, estado FROM usuarios $where ORDER BY id ASC";
-          $stmt = $conn->prepare($sql);
-          $stmt->execute($params);
 
-          if ($stmt->rowCount() > 0) {
-              while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                  echo "<tr>";
-                  echo "<td>{$row['nombre']}</td>";
-                  echo "<td>{$row['correo']}</td>";
-                  echo "<td>" . ucfirst($row['rol']) . "</td>";
-                  echo "<td><span class='badge " .
-                        ($row['estado'] == 'activo' ? 'badge-success' : 'badge-danger') . "'>"
-                        . ucfirst($row['estado']) . "</span></td>";
-                  echo "<td>
-                          <a href='editar_usuario.php?id={$row['id']}' class='action-icon text-success'>
-                            <i class='fa-solid fa-pen-to-square'></i>
-                          </a>
-                          <a href='usuarios.php?eliminar={$row['id']}'
-                             class='action-icon text-danger'
-                             onclick=\"return confirm('¿Seguro que quieres eliminar este usuario?');\">
-                            <i class='fa-solid fa-trash'></i>
-                          </a>
-                        </td>";
-                  echo "</tr>";
-              }
-          } else {
-              echo "<tr><td colspan='5'>❌ No se encontraron usuarios</td></tr>";
-          }
-          ?>
-        </tbody>
-      </table>
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>NOMBRE</th>
+
+                    <th>CORREO</th>
+
+                    <th>ROL</th>
+
+                    <th>ESTADO</th>
+
+                    <th>ACCIONES</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+            <?php if (count($usuarios) > 0): ?>
+
+
+                <?php foreach ($usuarios as $usuario): ?>
+
+
+                    <tr>
+
+
+                        <td>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $usuario['nombre']
+                            );
+                            ?>
+
+                        </td>
+
+
+                        <td class="text-primary">
+
+                            <strong>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $usuario['correo']
+                            );
+                            ?>
+
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <?php
+                            echo ucfirst(
+                                htmlspecialchars(
+                                    $usuario['rol']
+                                )
+                            );
+                            ?>
+
+                        </td>
+
+
+                        <td>
+
+
+                            <?php if ($usuario['estado'] === 'activo'): ?>
+
+
+                                <span class="badge badge-success">
+
+                                    Activo
+
+                                </span>
+
+
+                            <?php else: ?>
+
+
+                                <span class="badge badge-danger">
+
+                                    Inactivo
+
+                                </span>
+
+
+                            <?php endif; ?>
+
+
+                        </td>
+
+
+                        <td>
+
+
+                            <a
+                                href="editar_usuario.php?id=<?php echo $usuario['id']; ?>"
+                                class="action-icon text-success"
+                                title="Editar">
+
+                                <i class="fa-solid fa-pen-to-square"></i>
+
+                            </a>
+
+
+                            <a
+                                href="usuarios.php?eliminar=<?php echo $usuario['id']; ?>"
+                                class="action-icon text-danger"
+                                title="Eliminar"
+                                onclick="return confirm('¿Seguro que quieres eliminar este usuario?');">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </a>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                <?php endforeach; ?>
+
+
+            <?php else: ?>
+
+
+                <tr>
+
+                    <td colspan="5">
+
+                        ❌ No se encontraron usuarios
+
+                    </td>
+
+                </tr>
+
+
+            <?php endif; ?>
+
+
+            </tbody>
+
+        </table>
+
     </div>
-  </main>
+
+</main>
+
+
 </body>
+
 </html>

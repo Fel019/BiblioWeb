@@ -3,8 +3,8 @@ include 'conexion.php';
 session_start();
 include 'verificar_rol.php';
 
-// Solo acceso a alumnos y profesores
-verificarRol(['alumno', 'profesor']);
+// Portal disponible para alumnos, profesores y personal administrativo.
+verificarRol(['alumno', 'profesor', 'administrativo']);
 
 // Si no hay sesión, redirige
 if (!isset($_SESSION['usuario']) || !isset($_SESSION['id'])) {
@@ -15,7 +15,7 @@ if (!isset($_SESSION['usuario']) || !isset($_SESSION['id'])) {
 $id_usuario = $_SESSION['id'];
 
 // Consultar préstamos del usuario actual
-$sql = "SELECT l.titulo, l.autor, l.categoria, 
+$sql = "SELECT l.titulo, l.autor, l.categoria, p.cantidad,
                p.fecha_prestamo, p.fecha_devolucion, p.estado
         FROM prestamos p
         INNER JOIN libros l ON p.libro_id = l.id
@@ -32,6 +32,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <meta charset="UTF-8">
   <title>Mis Préstamos | BiblioWeb</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="estilos.css">
   <style>
     body {
       background-color: #f5f7fa;
@@ -123,7 +124,16 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
   </style>
 </head>
-<body>
+<body class="portal-user portal-loans">
+  <header class="portal-topbar">
+    <a class="portal-brand" href="index.php"><img src="assets/escudo-institucional.png" alt=""><span>Colegio Parroquial<br>Nuestra Señora de los Andes</span></a>
+    <nav class="portal-links" aria-label="Navegación principal">
+      <a href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
+      <a href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>
+      <a class="active" href="prestamos_usuario.php" title="Mis préstamos"><i class="fa-solid fa-calendar-check"></i><span> Préstamos</span></a>
+      <a class="portal-exit" href="logout.php" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i><span> Salir</span></a>
+    </nav>
+  </header>
   <div class="contenedor">
     <div class="encabezado">
       <h2><i class="fa-solid fa-book"></i> Mis Préstamos</h2>
@@ -131,6 +141,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <i class="fa-solid fa-plus"></i> Realizar Préstamo
       </a>
     </div>
+    <div class="loan-summary"><i class="fa-solid fa-book-open-reader"></i> Aquí puedes consultar el estado y las fechas de devolución de todos tus préstamos.</div>
     
     <table>
       <thead>
@@ -138,6 +149,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <th>Título</th>
           <th>Autor</th>
           <th>Categoría</th>
+          <th>Ejemplares</th>
           <th>Fecha Préstamo</th>
           <th>Fecha Devolución</th>
           <th>Estado</th>
@@ -152,6 +164,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td>{$p['titulo']}</td>
                     <td>{$p['autor']}</td>
                     <td>{$p['categoria']}</td>
+                    <td>{$p['cantidad']}</td>
                     <td>{$p['fecha_prestamo']}</td>
                     <td>{$p['fecha_devolucion']}</td>
                     <td><span class='badge $badgeClass'>" . ucfirst($p['estado']) . "</span></td>

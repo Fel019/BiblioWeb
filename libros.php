@@ -123,21 +123,36 @@ if (isset($_GET['eliminar'])) {
 // BUSCAR LIBROS
 // ======================================================
 
-$where  = "";
+$condiciones = [];
 $params = [];
+
+$stmtCategorias = $conn->query("SELECT categoria, COUNT(*) AS total FROM libros GROUP BY categoria ORDER BY categoria ASC");
+$categoriasFiltro = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
+$categoriaFiltro = trim($_GET['categoria'] ?? '');
 
 if (!empty($_GET['q'])) {
 
     $busqueda = trim($_GET['q']);
 
-    $where = "
-        WHERE titulo LIKE :q
-           OR autor LIKE :q
-           OR isbn LIKE :q
-    ";
+    $condiciones[] = "(titulo LIKE :q OR autor LIKE :q OR isbn LIKE :q)";
 
     $params[':q'] = "%" . $busqueda . "%";
 }
+
+if ($categoriaFiltro !== '') {
+    $condiciones[] = "categoria = :categoria";
+    $params[':categoria'] = $categoriaFiltro;
+}
+
+$where = $condiciones ? 'WHERE ' . implode(' AND ', $condiciones) : '';
+$porPagina = 10;
+$paginaActual = max(1, (int) ($_GET['pagina'] ?? 1));
+$stmtTotal = $conn->prepare("SELECT COUNT(*) FROM libros $where");
+$stmtTotal->execute($params);
+$totalLibros = (int) $stmtTotal->fetchColumn();
+$totalPaginas = max(1, (int) ceil($totalLibros / $porPagina));
+$paginaActual = min($paginaActual, $totalPaginas);
+$offset = ($paginaActual - 1) * $porPagina;
 
 
 $sql = "
@@ -154,10 +169,16 @@ $sql = "
     FROM libros
     $where
     ORDER BY id ASC
+    LIMIT :limite OFFSET :offset
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->execute($params);
+foreach ($params as $clave => $valor) {
+    $stmt->bindValue($clave, $valor, PDO::PARAM_STR);
+}
+$stmt->bindValue(':limite', $porPagina, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 
 $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -196,7 +217,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="navbar-left">
 
-        <i class="fa-solid fa-book-open navbar-logo"></i>
+        <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
 
         <span class="navbar-title">
             Colegio Parroquial Nuestra Señora de los Andes
@@ -266,6 +287,10 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ====================================================== -->
 
 <main class="main-content">
+    <section class="workspace-heading">
+        <div><h1>Gestión de libros</h1><p>Organiza el catálogo, la disponibilidad y los ejemplares de la biblioteca.</p></div>
+        <span class="workspace-tag"><i class="fa-solid fa-book"></i> Catálogo institucional</span>
+    </section>
 
 
     <?php if (isset($_GET['mensaje']) && $_GET['mensaje'] === 'agregado'): ?>
@@ -339,6 +364,15 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 : '';
                         ?>"
                     >
+
+                    <select name="categoria">
+                        <option value="">Todas las categorías</option>
+                        <?php foreach ($categoriasFiltro as $categoria): ?>
+                            <option value="<?php echo htmlspecialchars($categoria['categoria']); ?>" <?php echo $categoriaFiltro === $categoria['categoria'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($categoria['categoria']); ?> (<?php echo (int) $categoria['total']; ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
 
 
                     <button
@@ -495,7 +529,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
             <h3>
-                Catálogo de Libros
+                Catálogo de Libros <span class="list-counter"><?php echo $totalLibros; ?> resultado<?php echo $totalLibros === 1 ? '' : 's'; ?></span>
             </h3>
 
 
@@ -719,6 +753,14 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
             </table>
+
+            <?php if ($totalPaginas > 1): ?>
+                <nav class="admin-pagination" aria-label="Paginación de libros">
+                    <?php if ($paginaActual > 1): ?><a href="libros.php?<?php echo http_build_query(['q' => $_GET['q'] ?? '', 'categoria' => $categoriaFiltro, 'pagina' => $paginaActual - 1]); ?>">Anterior</a><?php endif; ?>
+                    <span>Página <?php echo $paginaActual; ?> de <?php echo $totalPaginas; ?> · 10 por página</span>
+                    <?php if ($paginaActual < $totalPaginas): ?><a href="libros.php?<?php echo http_build_query(['q' => $_GET['q'] ?? '', 'categoria' => $categoriaFiltro, 'pagina' => $paginaActual + 1]); ?>">Siguiente</a><?php endif; ?>
+                </nav>
+            <?php endif; ?>
 
 
         </div>

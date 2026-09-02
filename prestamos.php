@@ -471,7 +471,7 @@ $prestamos = $stmtPrestamos->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="navbar-left">
 
-        <i class="fa-solid fa-book-open navbar-logo"></i>
+        <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
 
         <span class="navbar-title">
             Colegio Parroquial Nuestra Señora de los Andes
@@ -549,6 +549,10 @@ $prestamos = $stmtPrestamos->fetchAll(PDO::FETCH_ASSOC);
 ====================================================== -->
 
 <main class="main-content">
+    <section class="workspace-heading">
+        <div><h1>Préstamos y devoluciones</h1><p>Gestiona la circulación de ejemplares de forma clara y ágil.</p></div>
+        <span class="workspace-tag"><i class="fa-solid fa-arrows-rotate"></i> Circulación</span>
+    </section>
 
 
     <?php if (isset($_GET['mensaje'])): ?>

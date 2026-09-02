@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/conexion.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -24,50 +25,50 @@ try {
     $fi = $fi ? date('Y-m-d', strtotime($fi)) : '1900-01-01';
     $ff = $ff ? date('Y-m-d', strtotime($ff)) : '2100-12-31';
 
-    // --- Conexión BD ---
-    $pdo = new PDO('mysql:host=localhost;dbname=biblioteca;charset=utf8','root','');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
     // --- Consulta según tipo ---
     switch ($tipo) {
         case 'prestamos':
-            $sql = "SELECT p.id_prestamo   AS ID,
+            $sql = "SELECT p.id            AS ID,
                            u.nombre        AS Usuario,
                            l.titulo        AS Libro,
                            p.fecha_prestamo AS 'Fecha préstamo',
                            p.fecha_devolucion AS 'Fecha devolución',
                            p.estado        AS Estado
                     FROM prestamos p
-                    INNER JOIN usuarios u ON u.id_usuario = p.id_usuario
-                    INNER JOIN libros   l ON l.id_libro   = p.id_libro
+                    INNER JOIN usuarios u ON u.id = p.usuario_id
+                    INNER JOIN libros   l ON l.id = p.libro_id
                     WHERE p.fecha_prestamo BETWEEN :fi AND :ff
                     ORDER BY p.fecha_prestamo DESC";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $conn->prepare($sql);
             $stmt->execute([':fi'=>$fi, ':ff'=>$ff]);
             break;
 
         case 'usuarios':
-            $sql = "SELECT id_usuario AS ID,
+            $sql = "SELECT id AS ID,
                            nombre     AS Nombre,
                            username   AS Usuario,
                            correo     AS Correo,
                            rol        AS Rol,
                            estado     AS Estado
                     FROM usuarios
-                    ORDER BY id_usuario ASC";
-            $stmt = $pdo->query($sql);
+                    WHERE DATE(fecha_creacion) BETWEEN :fi AND :ff
+                    ORDER BY id ASC";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([':fi'=>$fi, ':ff'=>$ff]);
             break;
 
         case 'libros':
-            $sql = "SELECT id_libro AS ID,
+            $sql = "SELECT id AS ID,
                            titulo   AS Título,
                            autor    AS Autor,
                            anio_publicacion AS Año,
                            categoria AS Categoría,
                            estado   AS Estado
                     FROM libros
-                    ORDER BY id_libro ASC";
-            $stmt = $pdo->query($sql);
+                    WHERE DATE(fecha_creacion) BETWEEN :fi AND :ff
+                    ORDER BY id ASC";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([':fi'=>$fi, ':ff'=>$ff]);
             break;
 
         default:

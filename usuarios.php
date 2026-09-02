@@ -139,20 +139,38 @@ if (isset($_GET['eliminar'])) {
 // BUSCAR USUARIOS
 // ======================================================
 
-$where = "";
+$condiciones = [];
 $params = [];
+$rolesDisponibles = ['alumno', 'profesor', 'administrativo', 'bibliotecario', 'administrador'];
+$rolFiltro = trim($_GET['rol'] ?? '');
+$stmtConteoRoles = $conn->query("SELECT rol, COUNT(*) AS total FROM usuarios GROUP BY rol");
+$conteoRoles = $stmtConteoRoles->fetchAll(PDO::FETCH_KEY_PAIR);
 
 if (!empty($_GET['q'])) {
 
     $q = "%" . trim($_GET['q']) . "%";
 
-    $where = "
-        WHERE nombre LIKE :q
-           OR correo LIKE :q
-    ";
+    $condiciones[] = "(nombre LIKE :q OR correo LIKE :q)";
 
     $params[':q'] = $q;
 }
+
+if (in_array($rolFiltro, $rolesDisponibles, true)) {
+    $condiciones[] = "rol = :rol";
+    $params[':rol'] = $rolFiltro;
+} else {
+    $rolFiltro = '';
+}
+
+$where = $condiciones ? 'WHERE ' . implode(' AND ', $condiciones) : '';
+$porPagina = 10;
+$paginaActual = max(1, (int) ($_GET['pagina'] ?? 1));
+$stmtTotal = $conn->prepare("SELECT COUNT(*) FROM usuarios $where");
+$stmtTotal->execute($params);
+$totalUsuarios = (int) $stmtTotal->fetchColumn();
+$totalPaginas = max(1, (int) ceil($totalUsuarios / $porPagina));
+$paginaActual = min($paginaActual, $totalPaginas);
+$offset = ($paginaActual - 1) * $porPagina;
 
 
 // ======================================================
@@ -169,10 +187,16 @@ $sql = "
     FROM usuarios
     $where
     ORDER BY id ASC
+    LIMIT :limite OFFSET :offset
 ";
 
 $stmtUsuarios = $conn->prepare($sql);
-$stmtUsuarios->execute($params);
+foreach ($params as $clave => $valor) {
+    $stmtUsuarios->bindValue($clave, $valor, PDO::PARAM_STR);
+}
+$stmtUsuarios->bindValue(':limite', $porPagina, PDO::PARAM_INT);
+$stmtUsuarios->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmtUsuarios->execute();
 
 $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
 
@@ -216,7 +240,7 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="navbar-left">
 
-        <i class="fa-solid fa-book-open navbar-logo"></i>
+        <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
 
         <span class="navbar-title">
             Colegio Parroquial Nuestra Señora de los Andes
@@ -293,7 +317,11 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
      CONTENIDO
 ====================================================== -->
 
-<main class="main-content usuarios-layout">
+<main class="main-content usuarios-layout admin-users">
+    <section class="workspace-heading">
+        <div><h1>Comunidad lectora</h1><p>Registra y acompaña a quienes hacen parte de la biblioteca.</p></div>
+        <span class="workspace-tag"><i class="fa-solid fa-users"></i> Usuarios activos</span>
+    </section>
 
 
     <!-- ======================================================
@@ -327,6 +355,15 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                             : '';
                     ?>"
                 >
+
+                <select name="rol">
+                    <option value="">Todos los roles</option>
+                    <?php foreach ($rolesDisponibles as $rol): ?>
+                        <option value="<?php echo $rol; ?>" <?php echo $rolFiltro === $rol ? 'selected' : ''; ?>>
+                            <?php echo ucfirst($rol); ?> (<?php echo (int) ($conteoRoles[$rol] ?? 0); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
 
 
                 <button
@@ -487,7 +524,7 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
     <div class="usuarios-main card">
 
         <h3>
-            Usuarios Registrados
+            Usuarios Registrados <span class="list-counter"><?php echo $totalUsuarios; ?> resultado<?php echo $totalUsuarios === 1 ? '' : 's'; ?></span>
         </h3>
 
 
@@ -645,6 +682,14 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
             </tbody>
 
         </table>
+
+        <?php if ($totalPaginas > 1): ?>
+            <nav class="admin-pagination" aria-label="Paginación de usuarios">
+                <?php if ($paginaActual > 1): ?><a href="usuarios.php?<?php echo http_build_query(['q' => $_GET['q'] ?? '', 'rol' => $rolFiltro, 'pagina' => $paginaActual - 1]); ?>">Anterior</a><?php endif; ?>
+                <span>Página <?php echo $paginaActual; ?> de <?php echo $totalPaginas; ?> · 10 por página</span>
+                <?php if ($paginaActual < $totalPaginas): ?><a href="usuarios.php?<?php echo http_build_query(['q' => $_GET['q'] ?? '', 'rol' => $rolFiltro, 'pagina' => $paginaActual + 1]); ?>">Siguiente</a><?php endif; ?>
+            </nav>
+        <?php endif; ?>
 
     </div>
 

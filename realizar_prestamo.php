@@ -11,17 +11,29 @@ if (
     exit;
 }
 
+// Categorías para guiar la selección del libro.
+$stmtCategorias = $conn->query("SELECT DISTINCT categoria FROM libros ORDER BY categoria ASC");
+$categorias = $stmtCategorias->fetchAll(PDO::FETCH_COLUMN);
+$categoriaSeleccionada = trim($_GET['categoria'] ?? $_POST['categoria'] ?? '');
+if (!in_array($categoriaSeleccionada, $categorias, true)) {
+    $categoriaSeleccionada = '';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $libro_id  = (int) $_POST['libro_id'];
     $cantidad  = (int) $_POST['cantidad'];
     $usuario_id = (int) $_SESSION['id'];
 
-    $fecha_prestamo   = date('Y-m-d');
-    $fecha_devolucion = date('Y-m-d', strtotime('+7 days'));
+    $fecha_prestamo   = $_POST['fecha_prestamo'] ?? '';
+    $fecha_devolucion = $_POST['fecha_devolucion'] ?? '';
 
     if ($cantidad < 1) {
         $error = "La cantidad debe ser mínimo 1.";
+    } elseif (!$fecha_prestamo || !$fecha_devolucion) {
+        $error = "Selecciona la fecha de préstamo y la fecha de devolución.";
+    } elseif ($fecha_devolucion < $fecha_prestamo) {
+        $error = "La fecha de devolución no puede ser anterior a la fecha de préstamo.";
     } else {
 
         try {
@@ -126,16 +138,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Libros disponibles
-$libros = $conn->query("
-    SELECT
-        id,
-        titulo,
-        disponible
-    FROM libros
-    WHERE disponible > 0
-    ORDER BY titulo ASC
-");
+// Solo se cargan los libros disponibles de la categoría elegida.
+$libros = [];
+if ($categoriaSeleccionada !== '') {
+    $stmtLibros = $conn->prepare("SELECT id, titulo, disponible FROM libros WHERE disponible > 0 AND categoria = :categoria ORDER BY titulo ASC");
+    $stmtLibros->execute([':categoria' => $categoriaSeleccionada]);
+    $libros = $stmtLibros->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 
 <!DOCTYPE html>
@@ -156,6 +165,7 @@ $libros = $conn->query("
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     >
+    <link rel="stylesheet" href="estilos.css">
 
     <style>
 
@@ -250,7 +260,16 @@ $libros = $conn->query("
 
 </head>
 
-<body>
+<body class="portal-user portal-loan-form">
+<header class="portal-topbar">
+  <a class="portal-brand" href="index.php"><img src="assets/escudo-institucional.png" alt=""><span>Colegio Parroquial<br>Nuestra Señora de los Andes</span></a>
+  <nav class="portal-links" aria-label="Navegación principal">
+    <a href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
+    <a href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>
+    <a class="active" href="prestamos_usuario.php" title="Mis préstamos"><i class="fa-solid fa-calendar-check"></i><span> Préstamos</span></a>
+    <a class="portal-exit" href="logout.php" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i><span> Salir</span></a>
+  </nav>
+</header>
 
 <div class="contenedor">
 
@@ -258,6 +277,7 @@ $libros = $conn->query("
         <i class="fa-solid fa-hand-holding-book"></i>
         Generar un Nuevo Préstamo
     </h2>
+    <p class="form-helper">Elige una categoría, selecciona el libro y define las fechas de tu préstamo.</p>
 
 
     <?php if (!empty($error)): ?>
@@ -269,10 +289,24 @@ $libros = $conn->query("
     <?php endif; ?>
 
 
-    <form method="POST">
+    <form method="GET" class="category-filter" action="realizar_prestamo.php">
+        <label for="categoria">1. Elige una categoría</label>
+        <select id="categoria" name="categoria" onchange="this.form.submit()">
+            <option value="">-- Selecciona una categoría --</option>
+            <?php foreach ($categorias as $categoria): ?>
+                <option value="<?php echo htmlspecialchars($categoria); ?>" <?php echo $categoria === $categoriaSeleccionada ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($categoria); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </form>
+
+    <form method="POST" class="loan-form">
+
+        <input type="hidden" name="categoria" value="<?php echo htmlspecialchars($categoriaSeleccionada); ?>">
 
         <label for="libro_id">
-            Selecciona un libro disponible:
+            2. Selecciona un libro disponible:
         </label>
 
         <select
@@ -281,10 +315,10 @@ $libros = $conn->query("
         >
 
             <option value="">
-                -- Elige un libro --
+                <?php echo $categoriaSeleccionada === '' ? '-- Primero selecciona una categoría --' : '-- Elige un libro --'; ?>
             </option>
 
-            <?php while ($row = $libros->fetch(PDO::FETCH_ASSOC)): ?>
+            <?php foreach ($libros as $row): ?>
 
                 <option value="<?php echo $row['id']; ?>">
 
@@ -296,13 +330,13 @@ $libros = $conn->query("
 
                 </option>
 
-            <?php endwhile; ?>
+            <?php endforeach; ?>
 
         </select>
 
 
         <label for="cantidad">
-            Cantidad de ejemplares:
+            3. Cantidad de ejemplares:
         </label>
 
         <input
@@ -312,6 +346,17 @@ $libros = $conn->query("
             value="1"
             required
         >
+
+        <div class="loan-date-grid">
+            <div>
+                <label for="fecha_prestamo">4. Fecha de préstamo</label>
+                <input id="fecha_prestamo" type="date" name="fecha_prestamo" value="<?php echo htmlspecialchars($_POST['fecha_prestamo'] ?? date('Y-m-d')); ?>" required>
+            </div>
+            <div>
+                <label for="fecha_devolucion">5. Fecha de devolución</label>
+                <input id="fecha_devolucion" type="date" name="fecha_devolucion" value="<?php echo htmlspecialchars($_POST['fecha_devolucion'] ?? date('Y-m-d', strtotime('+7 days'))); ?>" required>
+            </div>
+        </div>
 
 
         <button

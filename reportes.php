@@ -12,6 +12,10 @@ if (!isset($_SESSION['usuario'])) {
 
 $resultados = [];
 $mensaje = "";
+$porPagina = 10;
+$paginaActual = max(1, (int) ($_GET['pagina'] ?? 1));
+$totalResultados = 0;
+$totalPaginas = 1;
 
 // Procesar reporte
 if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
@@ -26,15 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
                 $sql = "SELECT id AS ID, titulo AS TÍTULO, autor AS AUTOR, categoria AS CATEGORÍA,
                                anio_publicacion AS AÑO, estado AS ESTADO
                         FROM libros
-                        WHERE anio_publicacion BETWEEN :inicio AND :fin
-                        ORDER BY anio_publicacion ASC";
+                        WHERE DATE(fecha_creacion) BETWEEN :inicio AND :fin
+                        ORDER BY fecha_creacion DESC";
 
             } elseif ($tipo === "usuarios") {
                 $sql = "SELECT id AS ID, nombre AS NOMBRE, username AS USUARIO, correo AS CORREO,
-                               rol AS ROL, estado AS ESTADO, fecha_registro AS REGISTRO
+                               rol AS ROL, estado AS ESTADO, fecha_creacion AS REGISTRO
                         FROM usuarios
-                        WHERE DATE(fecha_registro) BETWEEN :inicio AND :fin
-                        ORDER BY fecha_registro ASC";
+                        WHERE DATE(fecha_creacion) BETWEEN :inicio AND :fin
+                        ORDER BY fecha_creacion DESC";
 
             } elseif ($tipo === "prestamos") {
                 $sql = "SELECT p.id AS ID,
@@ -60,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
                     ':fin' => $fin
                 ]);
                 $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $totalResultados = count($resultados);
+                $totalPaginas = max(1, (int) ceil($totalResultados / $porPagina));
+                $paginaActual = min($paginaActual, $totalPaginas);
+                $resultados = array_slice($resultados, ($paginaActual - 1) * $porPagina, $porPagina);
             }
         } catch (PDOException $e) {
             $mensaje = "❌ Error al generar reporte: " . $e->getMessage();
@@ -75,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reportes | BiblioSys</title>
+  <title>Reportes | BiblioWeb</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="estilos.css">
@@ -84,8 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
 
 <header class="navbar">
   <div class="navbar-left">
-    <i class="fa-solid fa-book-open navbar-logo"></i>
-    <span class="navbar-title">BiblioSys</span>
+      <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
+      <span class="navbar-title">Colegio Parroquial Nuestra Señora de los Andes</span>
   </div>
 
   <div class="navbar-center">
@@ -108,6 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
 </header>
 
 <main class="main-content">
+  <section class="workspace-heading">
+    <div><h1>Reportes de biblioteca</h1><p>Consulta la actividad del catálogo, la comunidad y los préstamos.</p></div>
+    <span class="workspace-tag"><i class="fa-solid fa-chart-line"></i> Información útil</span>
+  </section>
   <div class="usuarios-layout">
 
     <!-- Generar reporte -->
@@ -118,16 +130,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
           <label>Tipo de Reporte</label>
           <select name="tipo" required>
             <option value="">Seleccionar...</option>
-            <option value="libros">Libros Registrados</option>
-            <option value="usuarios">Usuarios Registrados</option>
-            <option value="prestamos">Historial de Préstamos</option>
+            <option value="libros" <?php echo ($_GET['tipo'] ?? '') === 'libros' ? 'selected' : ''; ?>>Libros Registrados</option>
+            <option value="usuarios" <?php echo ($_GET['tipo'] ?? '') === 'usuarios' ? 'selected' : ''; ?>>Usuarios Registrados</option>
+            <option value="prestamos" <?php echo ($_GET['tipo'] ?? '') === 'prestamos' ? 'selected' : ''; ?>>Historial de Préstamos</option>
           </select>
 
           <label>Fecha Inicial</label>
-          <input type="date" name="inicio" required>
+          <input type="date" name="inicio" value="<?php echo htmlspecialchars($_GET['inicio'] ?? ''); ?>" required>
 
           <label>Fecha Final</label>
-          <input type="date" name="fin" required>
+          <input type="date" name="fin" value="<?php echo htmlspecialchars($_GET['fin'] ?? ''); ?>" required>
 
           <button type="submit" class="btn btn-primary">
             <i class="fa-solid fa-chart-column"></i> Generar Reporte
@@ -148,6 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
       <?php endif; ?>
 
       <?php if (!empty($resultados)): ?>
+        <p class="results-summary">Mostrando <?php echo count($resultados); ?> de <?php echo $totalResultados; ?> resultados.</p>
         <table>
           <thead>
             <tr>
@@ -166,6 +179,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
             <?php endforeach; ?>
           </tbody>
         </table>
+        <?php if ($totalPaginas > 1): ?>
+          <nav class="admin-pagination" aria-label="Paginación de reportes">
+            <?php if ($paginaActual > 1): ?><a href="reportes.php?<?php echo http_build_query(['tipo' => $_GET['tipo'], 'inicio' => $_GET['inicio'], 'fin' => $_GET['fin'], 'pagina' => $paginaActual - 1]); ?>">Anterior</a><?php endif; ?>
+            <span>Página <?php echo $paginaActual; ?> de <?php echo $totalPaginas; ?> · 10 por página</span>
+            <?php if ($paginaActual < $totalPaginas): ?><a href="reportes.php?<?php echo http_build_query(['tipo' => $_GET['tipo'], 'inicio' => $_GET['inicio'], 'fin' => $_GET['fin'], 'pagina' => $paginaActual + 1]); ?>">Siguiente</a><?php endif; ?>
+          </nav>
+        <?php endif; ?>
       <?php else: ?>
         <p>⚠️ No se encontraron resultados.</p>
       <?php endif; ?>

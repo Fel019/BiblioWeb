@@ -1,4 +1,5 @@
 /* estilos.css */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 /* Fuente base */
 body {
@@ -603,5 +604,420 @@ body.login-body::before {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================================================
+   Interfaz institucional BiblioWeb - portales de gestión y lector
+   ================================================================ */
+:root {
+  --azul: #087df5;
+  --azul-oscuro: #096ad3;
+  --verde: #20b34c;
+  --rojo: #ed3349;
+  --fondo: #f4f7fc;
+  --texto: #12213b;
+  --borde: #dbe2ec;
+}
+
+* { box-sizing: border-box; }
+body { background: #eef3ff; color: var(--texto); font-family: Arial, Helvetica, sans-serif; }
+
+/* Cabecera de administración */
+.navbar {
+  min-height: 72px; padding: 12px 26px; background: #fff;
+  box-shadow: 0 2px 10px rgba(25, 52, 93, .08); gap: 22px;
+}
+.navbar-left { min-width: 360px; }
+.navbar-logo {
+  display: block; width: 34px; height: 43px; margin-right: 10px; object-fit: contain;
+}
+.navbar-title { color: #071d3d; font-size: 18px; }
+.navbar-center { flex: 1; text-align: center; }
+.navbar-center .nav-tabs { display: inline-flex; align-items: center; gap: 4px; }
+.navbar-center .nav-tabs a { color: #18233b; margin: 0 9px; padding: 10px 2px 7px; font-size: 14px; }
+.navbar-center .nav-tabs a.active { color: #155dff; border-bottom: 2px solid #155dff; }
+.navbar-right { gap: 16px; font-size: 14px; line-height: 15px; }
+.navbar-right > span { max-width: 105px; }
+.navbar-right .btn-small { width: 160px; min-height: 42px; padding: 9px 18px; border-radius: 7px; }
+
+/* Administración */
+.main-content { padding: 28px 26px; gap: 18px; align-items: flex-start; }
+.usuarios-layout { grid-template-columns: minmax(330px, 32%) minmax(0, 1fr); gap: 18px; width: 100%; }
+.usuarios-sidebar { gap: 18px; }
+.card { padding: 14px 13px; border-radius: 10px; box-shadow: 0 4px 13px rgba(28, 49, 83, .10); margin-bottom: 0; }
+.card h3 { margin: 14px 0 14px; color: #071d3d; font-size: 17px; }
+.card input, .card select { height: 36px; margin-bottom: 8px; padding: 7px 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; font-size: 14px; }
+.card label { display: block; margin: 5px 0 0; font-size: 14px; }
+.btn, .btn-buscar, .btn-success { min-height: 42px; width: 100%; padding: 9px 16px; border-radius: 7px; font-size: 14px; }
+.btn-primary, .btn-buscar { background: var(--azul); }
+.btn-success { background: var(--verde); }
+.btn-primary:hover, .btn-buscar:hover { background: var(--azul-oscuro); transform: none; }
+.btn-success:hover { background: #16943e; transform: none; }
+.usuarios-main { padding: 16px 13px; overflow-x: auto; }
+.usuarios-main table, .libros-main table { margin-top: 14px; min-width: 720px; }
+table th, table td { padding: 11px 11px; border-bottom: 1px solid #dce2ea; font-size: 14px; }
+table th { background: #f7f8fa; color: #14233d; font-size: 14px; text-transform: uppercase; }
+.badge { padding: 4px 10px; font-size: 11px; line-height: 1; }
+.badge-success { background: #d9f3df; color: #08772d; }
+.badge-danger { background: #fee0e4; color: #c01d35; }
+.badge-warning { background: #fff0bb; color: #875300; }
+.action-icon { font-size: 1.15rem; margin: 0 4px; }
+.alert { width: 100%; margin: 0 0 14px; }
+
+/* Portal de alumno, profesor y administrativo */
+body.portal-user, body.login-body {
+  min-height: 100vh; margin: 0; padding: 0; background: #f5f7fc !important;
+  position: relative; isolation: isolate; display: flex; justify-content: center; align-items: center;
+  font-family: 'Nunito Sans', Arial, sans-serif !important;
+}
+body.portal-user::before, body.login-body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; opacity: 1 !important;
+  background: url('assets/escudo-institucional.png') center/520px auto no-repeat;
+  opacity: .075 !important;
+}
+.portal-card, body.portal-user .container, body.portal-user .contenedor {
+  width: min(92vw, 825px) !important; margin: 0 auto !important; padding: 26px 27px !important;
+  background: rgba(255,255,255,.98) !important; border-radius: 13px !important;
+  box-shadow: 0 9px 22px rgba(40, 54, 77, .12) !important;
+}
+.institution-mark { display: block; width: 62px; height: 72px; margin: 0 auto 12px; object-fit: contain; }
+.institution-name { margin: 0; color: #333; font-weight: 700; font-size: 18px; line-height: 1.25; text-align: center; }
+.portal-user h1, .portal-user h2 { color: #2f3541 !important; }
+.portal-user .btn, .portal-user .btn-volver, .portal-user .btn-agregar { width: auto !important; min-height: 36px; padding: 10px 21px !important; border-radius: 7px !important; box-shadow: 0 4px 10px rgba(0, 123, 255, .2) !important; }
+.portal-user .btn-danger { background: var(--rojo) !important; }
+.portal-user table th { background: var(--azul) !important; color: #fff !important; }
+.portal-user table td { border-bottom: 1px solid #d9dde3 !important; }
+.portal-user .badge-success, .portal-user .disponible { background: #23ad48 !important; color: #fff !important; }
+.portal-user .badge-warning { background: #ffbd0a !important; color: #292001 !important; }
+
+/* Inicio del portal lector */
+body.portal-home .container { max-width: 695px !important; text-align: center; }
+body.portal-home h1 { margin: 25px 0 6px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 30px; }
+body.portal-home .rol { margin: 0 0 25px; }
+
+/* Catálogo del lector */
+body.portal-catalog { display: block; padding: 0 !important; }
+body.portal-catalog .container { width: min(1080px, calc(100vw - 48px)) !important; max-width: none !important; margin: 0 auto !important; min-height: calc(100vh - 70px); padding: 26px !important; background: rgba(255,255,255,.97) !important; box-shadow: 0 9px 24px rgba(40, 54, 77, .10) !important; border-radius: 14px !important; }
+body.portal-catalog h2 { margin: 0; }
+body.portal-catalog table { margin-top: 0; }
+body.portal-catalog .cantidad { font-weight: 700; }
+
+/* Mis préstamos y crear préstamo */
+body.portal-loans .contenedor { max-width: 955px !important; }
+body.portal-loans .encabezado { margin-bottom: 20px !important; }
+body.portal-loans h2 { font-size: 27px !important; }
+body.portal-loan-form .contenedor { max-width: 625px !important; }
+body.portal-loan-form h2 { text-align: center; margin: 28px 0 25px !important; font-size: 23px !important; }
+body.portal-loan-form label { font-size: 14px; }
+body.portal-loan-form input, body.portal-loan-form select { margin: 7px 0 20px !important; }
+body.portal-loan-form .category-filter { margin: 0 0 16px; padding: 14px; border: 1px solid #dce8f0; border-radius: 10px; background: #f3fbfa; }
+body.portal-loan-form .category-filter label { color: #177a70; font-weight: 800; }
+body.portal-loan-form .category-filter select { margin-bottom: 0 !important; border-color: #a9d5cf; }
+body.portal-loan-form .loan-form > label { color: #2d4059; font-weight: 800; }
+body.portal-loan-form .loan-date-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+body.portal-loan-form .loan-date-grid input { width: 100%; }
+
+/* Navegación y experiencia del portal lector */
+.portal-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10; min-height: 70px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 10px clamp(18px, 4vw, 58px); background: rgba(255,255,255,.92);
+  border-bottom: 1px solid rgba(210,220,235,.85); box-shadow: 0 2px 15px rgba(31,55,92,.06);
+  backdrop-filter: blur(12px);
+}
+.portal-brand { display: flex; align-items: center; gap: 10px; color: #15345a; text-decoration: none; font: 800 14px/1.15 'Plus Jakarta Sans', sans-serif; }
+.portal-brand img { width: 34px; height: 42px; object-fit: contain; }
+.portal-links { display: flex; align-items: center; gap: 8px; }
+.portal-links a { color: #4a5b75; text-decoration: none; font-size: 14px; font-weight: 700; padding: 9px 11px; border-radius: 8px; }
+.portal-links a:hover, .portal-links a.active { color: #087df5; background: #e9f4ff; }
+.portal-links .portal-exit { color: #d52e47; }
+.portal-links .portal-exit:hover { background: #fff0f2; }
+body.portal-home, body.portal-loans, body.portal-loan-form { padding-top: 70px !important; }
+body.portal-catalog { padding-top: 70px !important; }
+
+.welcome-copy { max-width: 510px; margin: 0 auto 22px; color: #687892; font-size: 16px; line-height: 1.55; }
+.quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 4px auto 16px; }
+.quick-action { display: block; padding: 18px 14px; border: 1px solid #e1e9f4; border-radius: 12px; color: #203e62; text-decoration: none; text-align: left; background: linear-gradient(135deg, #f9fcff, #edf6ff); transition: transform .18s ease, box-shadow .18s ease; }
+.quick-action:hover { transform: translateY(-3px); box-shadow: 0 10px 18px rgba(24, 110, 203, .13); }
+.quick-action i { display: block; margin-bottom: 8px; color: #087df5; font-size: 20px; }
+.quick-action strong { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; }
+.quick-action span { display: block; margin-top: 4px; color: #6c7b91; font-size: 12px; line-height: 1.35; }
+.portal-note { margin: 10px 0 0; color: #69809d; font-size: 13px; }
+
+body.portal-catalog .container { padding-top: 34px !important; }
+body.portal-catalog tr:hover { background: #f4f9ff !important; }
+body.portal-catalog .catalog-user-heading { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 0 0 18px; text-align: left; }
+body.portal-catalog .catalog-user-heading img { width: 54px; height: 65px; object-fit: contain; }
+body.portal-catalog .catalog-user-heading h2 { margin: 0 0 4px; color: #2d3645; font: 800 24px 'Plus Jakarta Sans', sans-serif; }
+body.portal-catalog .catalog-user-heading p { margin: 0; color: #687b95; line-height: 1.45; }
+body.portal-catalog .catalog-selector { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 0 0 16px; padding: 14px 16px; border: 1px solid #dce8f0; border-radius: 11px; background: linear-gradient(110deg, #f4fbfa, #f5f9ff); }
+body.portal-catalog .catalog-selector form { flex: 1; max-width: 490px; }
+body.portal-catalog .catalog-selector label { display: block; margin: 0 0 6px; color: #277c75; font-size: 13px; font-weight: 800; }
+body.portal-catalog .catalog-selector select { width: 100%; height: 39px; padding: 8px 11px; border: 1px solid #bcd4df; border-radius: 7px; color: #29465f; background: #fff; font: 700 14px 'Nunito Sans', sans-serif; cursor: pointer; }
+body.portal-catalog .catalog-selector > span { padding: 7px 10px; border-radius: 999px; background: #e2f0fb; color: #28678f; font-size: 12px; font-weight: 800; white-space: nowrap; }
+body.portal-catalog .category-chip b { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; background: #edf2f7; color: #61748b; font-size: 11px; }
+body.portal-catalog .category-chip.active b { background: #1b8f86; color: #fff; }
+body.portal-catalog .category-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; padding: 13px 15px; border: 1px solid #e0e9f0; border-radius: 10px; background: linear-gradient(100deg, #f3fbfa, #f8fbff); }
+body.portal-catalog .category-heading h3 { margin: 2px 0 0; color: #173d61; font: 800 19px 'Plus Jakarta Sans', sans-serif; }
+body.portal-catalog .eyebrow { color: #2c847b; font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+body.portal-catalog .results-count { padding: 6px 9px; border-radius: 999px; background: #dfeefb; color: #28678f; font-size: 12px; font-weight: 800; }
+body.portal-catalog .catalog-pagination { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 23px 0 0; color: #687b91; font-size: 13px; font-weight: 700; }
+body.portal-catalog .catalog-pagination a { padding: 8px 12px; border-radius: 7px; background: #e9f4ff; color: #126ea8; text-decoration: none; }
+body.portal-catalog .catalog-pagination a:hover { background: #d9ecfb; }
+body.portal-catalog .catalog-results { padding: 18px; border: 1px solid #e0e8f0; border-radius: 13px; background: #fff; box-shadow: 0 6px 18px rgba(26, 58, 91, .07); }
+body.portal-catalog .catalog-results table { margin-top: 0; }
+body.portal-loans .loan-summary { margin: 0 0 14px; padding: 12px 14px; background: #ebf8ef; border-left: 5px solid #20b34c; border-radius: 7px; color: #16703a; font-size: 14px; font-weight: 700; }
+body.portal-loans .loan-summary i { margin-right: 7px; }
+body.portal-loans .contenedor { padding-top: 24px !important; }
+body.portal-loan-form .form-helper { margin: -14px 0 21px; color: #687892; text-align: center; font-size: 14px; }
+
+@media (max-width: 680px) {
+  .portal-topbar { min-height: 62px; padding: 7px 14px; }
+  .portal-brand { font-size: 11px; max-width: 165px; }
+  .portal-brand img { width: 27px; height: 35px; }
+  .portal-links { gap: 0; }
+  .portal-links a { padding: 8px 7px; font-size: 0; }
+  .portal-links a i { font-size: 16px; }
+  body.portal-user, body.login-body { align-items: flex-start; }
+  body.portal-home, body.portal-loans, body.portal-loan-form { padding-top: 84px !important; }
+  .quick-actions { grid-template-columns: 1fr; }
+  .portal-user .contenedor, .portal-user .container { width: calc(100vw - 28px) !important; }
+  body.portal-loan-form .loan-date-grid { grid-template-columns: 1fr; gap: 0; }
+  body.portal-catalog .container { width: calc(100vw - 24px) !important; padding: 18px !important; }
+  body.portal-catalog .catalog-user-heading { align-items: flex-start; }
+  body.portal-catalog .catalog-user-heading h2 { font-size: 19px; }
+  body.portal-catalog .catalog-user-heading img { width: 42px; height: 53px; }
+  body.portal-catalog .catalog-selector { align-items: stretch; flex-direction: column; gap: 10px; }
+  body.portal-catalog .category-heading { align-items: flex-start; gap: 10px; }
+  body.portal-catalog .catalog-pagination { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ================================================================
+   Espacio de trabajo administrativo: compacto y orientado a tareas
+   ================================================================ */
+body:has(.navbar) {
+  background: #f4f7fb;
+  color: #1c2b42;
+  font-family: 'Nunito Sans', Arial, sans-serif;
+}
+body:has(.navbar) .navbar {
+  position: fixed; z-index: 20; top: 0; left: 0; right: 0; height: 68px; min-height: 68px;
+  padding: 9px 28px; background: rgba(255,255,255,.96); border-bottom: 1px solid #dfe7f1;
+  box-shadow: 0 2px 14px rgba(28, 47, 77, .08);
+}
+body:has(.navbar) .navbar-left { min-width: 345px; }
+body:has(.navbar) .navbar-logo { width: 30px; height: 39px; }
+body:has(.navbar) .navbar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: #17395e; }
+body:has(.navbar) .navbar-center {
+  position: fixed; top: 68px; bottom: 0; left: 0; z-index: 19; width: 232px;
+  padding: 24px 13px; overflow-y: auto; background: linear-gradient(180deg, #112a46 0%, #173b5d 100%);
+  text-align: left; box-shadow: 4px 0 16px rgba(18, 39, 64, .09);
+}
+body:has(.navbar) .navbar-center .nav-tabs { display: flex !important; flex-direction: column !important; align-items: stretch !important; width: 100%; }
+body:has(.navbar) .navbar-center .nav-tabs a { display: block !important; visibility: visible !important; opacity: 1 !important; }
+body:has(.navbar) .navbar-center::before {
+  content: 'PANEL DE GESTIÓN'; display: block; margin: 0 11px 13px;
+  color: #8db7d5; font-size: 10px; font-weight: 800; letter-spacing: .12em;
+}
+body:has(.navbar) .navbar-center .nav-tabs { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+body:has(.navbar) .navbar-center .nav-tabs a {
+  margin: 0; padding: 11px 13px; border: 0; border-radius: 8px;
+  color: #d9e9f5; font-size: 14px; font-weight: 700;
+}
+body:has(.navbar) .navbar-center .nav-tabs a::before { display: inline-block; width: 22px; color: #7ec6bc; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+body:has(.navbar) .navbar-center .nav-tabs a[href="libros.php"]::before { content: '\f02d'; }
+body:has(.navbar) .navbar-center .nav-tabs a[href="prestamos.php"]::before { content: '\f49e'; }
+body:has(.navbar) .navbar-center .nav-tabs a[href="usuarios.php"]::before { content: '\f0c0'; }
+body:has(.navbar) .navbar-center .nav-tabs a[href="reportes.php"]::before { content: '\f201'; }
+body:has(.navbar) .navbar-center .nav-tabs a:hover { color: #fff; background: rgba(255,255,255,.09); }
+body:has(.navbar) .navbar-center .nav-tabs a.active { color: #fff; background: #287c83; border: 0; box-shadow: 0 7px 15px rgba(0,0,0,.16); }
+body:has(.navbar) .navbar-center .nav-tabs a.active::before { color: #d5f8df; }
+body:has(.navbar) .navbar-right { gap: 13px; color: #48627d; font-size: 12px; }
+body:has(.navbar) .navbar-right .btn-small { width: 106px; min-height: 36px; padding: 8px 12px; background: #e95d66; box-shadow: none; }
+body:has(.navbar) .navbar-right .btn-small:hover { background: #d94b56; }
+body:has(.navbar) .navbar + .main-content {
+  min-height: 100vh; margin-left: 232px; padding: 94px 28px 30px; gap: 16px;
+  display: grid; align-content: start;
+  background-color: #f4f7fb; background-image: url('assets/escudo-institucional.png');
+  background-repeat: no-repeat; background-position: center 67%; background-size: min(34vw, 440px);
+  background-attachment: fixed; background-blend-mode: luminosity; position: relative;
+}
+body:has(.navbar) .navbar + .main-content:not(.usuarios-layout) { grid-template-columns: minmax(0, 1fr); }
+body:has(.navbar) .navbar + .main-content::before {
+  content: ''; position: fixed; z-index: 0; top: 68px; left: 232px; right: 0; bottom: 0;
+  background: rgba(244,247,251,.88); pointer-events: none;
+}
+body:has(.navbar) .navbar + .main-content > * { position: relative; z-index: 1; }
+body:has(.navbar) .workspace-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; width: 100%; margin: 0 0 3px; }
+body:has(.navbar) .usuarios-layout > .workspace-heading { grid-column: 1 / -1; }
+body:has(.navbar) .workspace-heading h1 { margin: 0; color: #183656; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; letter-spacing: -.025em; }
+body:has(.navbar) .workspace-heading p { margin: 6px 0 0; color: #72839a; font-size: 14px; }
+body:has(.navbar) .workspace-heading .workspace-tag { padding: 7px 11px; border-radius: 999px; background: #e4f4ef; color: #147367; font-size: 12px; font-weight: 800; white-space: nowrap; }
+body:has(.navbar) .usuarios-layout { gap: 16px; }
+body:has(.navbar) .usuarios-sidebar { gap: 16px; }
+body:has(.navbar) .card {
+  padding: 16px; border: 1px solid #e1e9f1; border-radius: 12px; box-shadow: 0 5px 16px rgba(25, 49, 81, .07);
+}
+body:has(.navbar) .card h3 { margin: 2px 0 14px; color: #1b3a59; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; }
+body:has(.navbar) .card input, body:has(.navbar) .card select { height: 38px; margin-bottom: 9px; border-color: #d6e0eb; background: #fbfcfe; }
+body:has(.navbar) .card input:focus, body:has(.navbar) .card select:focus { outline: 3px solid rgba(62, 168, 157, .16); border-color: #4da99e; }
+body:has(.navbar) .btn-buscar, body:has(.navbar) .btn-primary { background: #276c90; box-shadow: none; }
+body:has(.navbar) .btn-success { background: #269b72; box-shadow: none; }
+body:has(.navbar) .btn-buscar:hover, body:has(.navbar) .btn-primary:hover { background: #1f5876; }
+body:has(.navbar) .btn-success:hover { background: #1e805e; }
+body:has(.navbar) .usuarios-main { padding: 17px; border-radius: 12px; }
+body:has(.navbar) table th { padding: 11px; background: #edf3f7; color: #57708a; font-size: 11px; letter-spacing: .025em; }
+body:has(.navbar) table td { padding: 11px; color: #2b4058; }
+body:has(.navbar) table tr:hover td { background: #f3faf8; }
+body:has(.navbar) .list-counter { display: inline-block; margin-left: 7px; padding: 3px 8px; border-radius: 999px; background: #e4f4ef; color: #17796d; font-size: 11px; font-weight: 800; vertical-align: middle; }
+body:has(.navbar) .admin-pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin: 18px 0 2px; color: #6b7c91; font-size: 12px; font-weight: 700; }
+body:has(.navbar) .admin-pagination a { padding: 7px 11px; border-radius: 7px; background: #e8f4ff; color: #126da8; text-decoration: none; }
+body:has(.navbar) .results-summary { margin: -4px 0 10px; color: #6e8097; font-size: 13px; }
+body:has(.navbar) .badge-success { background: #d9f2e7; color: #167052; }
+body:has(.navbar) .badge-danger { background: #fee5e6; color: #bd3a48; }
+body:has(.navbar) .action-icon.text-success { color: #1b9b72; }
+body:has(.navbar) .action-icon.text-danger { color: #e45663; }
+
+@media (max-width: 900px) {
+  body:has(.navbar) .navbar { position: static; height: auto; flex-wrap: wrap; padding: 10px 16px; }
+  body:has(.navbar) .navbar-left { min-width: 0; }
+  body:has(.navbar) .navbar-center { position: static; order: 3; width: 100%; padding: 5px 0; background: transparent; box-shadow: none; overflow: visible; }
+  body:has(.navbar) .navbar-center::before { display: none; }
+  body:has(.navbar) .navbar-center .nav-tabs { flex-direction: row; overflow-x: auto; }
+  body:has(.navbar) .navbar-center .nav-tabs a { color: #49637d; background: #edf3f7; white-space: nowrap; }
+  body:has(.navbar) .navbar-center .nav-tabs a.active { background: #276c90; }
+  body:has(.navbar) .navbar + .main-content { margin-left: 0; padding: 22px 16px; background-size: 540px; }
+  body:has(.navbar) .navbar + .main-content::before { top: 0; left: 0; }
+  body:has(.navbar) .workspace-heading { align-items: flex-start; flex-direction: column; }
+}
+
+/* Panel de gestión siempre desplegado en escritorio */
+@media (min-width: 901px) {
+  body:has(.navbar) .navbar-center {
+    display: block !important; visibility: visible !important; opacity: 1 !important;
+    top: 68px !important; left: 0 !important; bottom: 0 !important; width: 232px !important;
+    height: calc(100vh - 68px) !important; padding: 18px 12px !important; overflow: visible !important;
+    background: #ffffff !important; border-right: 1px solid #dce6ef !important;
+  }
+  body:has(.navbar) .navbar-center::before {
+    display: block !important; margin: 0 10px 12px !important; padding-bottom: 10px;
+    border-bottom: 1px solid #e4ebf2; color: #5f7b97 !important;
+  }
+  body:has(.navbar) .navbar-center .nav-tabs {
+    display: flex !important; visibility: visible !important; opacity: 1 !important;
+    flex-direction: column !important; align-items: stretch !important; width: 100% !important;
+    gap: 6px !important;
+  }
+  body:has(.navbar) .navbar-center .nav-tabs a {
+    display: flex !important; visibility: visible !important; opacity: 1 !important;
+    align-items: center; min-height: 43px; padding: 10px 12px !important;
+    color: #38546f !important; background: #f7fafc !important; border: 1px solid transparent !important;
+    border-radius: 8px !important; font-size: 13px !important; font-weight: 800 !important;
+  }
+  body:has(.navbar) .navbar-center .nav-tabs a::before { width: 25px !important; color: #238f84 !important; }
+  body:has(.navbar) .navbar-center .nav-tabs a:hover { color: #176e99 !important; background: #edf7fb !important; border-color: #d7eaf3 !important; transform: none; }
+  body:has(.navbar) .navbar-center .nav-tabs a.active { color: #126c62 !important; background: #e2f4ee !important; border-color: #bfe3d8 !important; }
+}
+
+/* Usuarios: tabla completa sin barra horizontal */
+body:has(.navbar) .admin-users .usuarios-main { overflow-x: visible; min-width: 0; }
+body:has(.navbar) .admin-users .usuarios-main table { min-width: 0; width: 100%; table-layout: fixed; }
+body:has(.navbar) .admin-users .usuarios-main th,
+body:has(.navbar) .admin-users .usuarios-main td { padding: 10px 9px; font-size: 13px; overflow-wrap: anywhere; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(1) { width: 19%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(2) { width: 40%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(3) { width: 17%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(4) { width: 12%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(5) { width: 12%; }
+body:has(.navbar) .admin-users .usuarios-main td:last-child { white-space: nowrap; overflow-wrap: normal; }
+body:has(.navbar) .admin-users .usuarios-main .action-icon { display: inline-block; margin: 0 3px; font-size: 1.05rem; }
+
+/* La grilla de usuarios no debe sumar el 100% al margen del panel lateral. */
+body:has(.navbar) .navbar + .main-content.admin-users {
+  width: auto !important; grid-template-columns: minmax(255px, 285px) minmax(0, 1fr) !important;
+}
+body:has(.navbar) .admin-users .usuarios-sidebar { min-width: 0; }
+body:has(.navbar) .admin-users .usuarios-sidebar .card { padding: 12px; }
+body:has(.navbar) .admin-users .usuarios-sidebar .card h3 { margin-bottom: 10px; font-size: 14px; }
+body:has(.navbar) .admin-users .usuarios-sidebar .card input,
+body:has(.navbar) .admin-users .usuarios-sidebar .card select { height: 34px; margin-bottom: 7px; padding: 6px 9px; font-size: 13px; }
+body:has(.navbar) .admin-users .usuarios-sidebar .btn { min-height: 37px; padding: 8px 10px; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(1) { width: 18%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(2) { width: 39%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(3) { width: 16%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(4) { width: 12%; }
+body:has(.navbar) .admin-users .usuarios-main th:nth-child(5) { width: 15%; }
+body:has(.navbar) .admin-users .usuarios-main td:last-child { min-width: 70px; text-align: center; }
+
+@media (max-width: 900px) {
+  body:has(.navbar) .admin-users .usuarios-main { overflow-x: auto; }
+  body:has(.navbar) .admin-users .usuarios-main table { min-width: 640px; }
+  body:has(.navbar) .navbar + .main-content.admin-users { width: auto !important; grid-template-columns: 1fr !important; }
+}
+
+/* Ambiente compartido: administración con la calidez del portal lector */
+body:has(.navbar) { background: #f5f7fc; }
+body:has(.navbar) { overflow-x: hidden; }
+body:has(.navbar) .navbar {
+  background: rgba(255,255,255,.94); border-bottom-color: #dbe4ef;
+  backdrop-filter: blur(12px);
+}
+body:has(.navbar) .navbar-center {
+  background: rgba(255,255,255,.92); border-right: 1px solid #dfe7f1;
+  box-shadow: 3px 0 16px rgba(46, 68, 101, .06); backdrop-filter: blur(10px);
+}
+body:has(.navbar) .navbar-center::before { color: #6f8fa9; }
+body:has(.navbar) .navbar-center .nav-tabs a { color: #50657d; }
+body:has(.navbar) .navbar-center .nav-tabs a::before { color: #2f9b8c; }
+body:has(.navbar) .navbar-center .nav-tabs a:hover { color: #176f9e; background: #edf7fb; }
+body:has(.navbar) .navbar-center .nav-tabs a.active {
+  color: #176f9e; background: #e5f5f0; box-shadow: none;
+}
+body:has(.navbar) .navbar-center .nav-tabs a.active::before { color: #178778; }
+body:has(.navbar) .navbar + .main-content {
+  background-color: #f5f7fc; background-size: min(39vw, 520px); background-position: center 63%;
+  background-blend-mode: normal;
+}
+body:has(.navbar) .navbar + .main-content::before { background: rgba(245,247,252,.82); }
+body:has(.navbar) .workspace-heading h1 { color: #2d3645; }
+body:has(.navbar) .workspace-heading p { color: #6b7d97; }
+body:has(.navbar) .workspace-heading .workspace-tag { background: #e6f5f0; color: #17796d; }
+body:has(.navbar) .card, body:has(.navbar) .usuarios-main {
+  background: rgba(255,255,255,.96); border-color: #e0e8f1; box-shadow: 0 8px 20px rgba(48, 67, 96, .08);
+}
+body:has(.navbar) .card h3 { color: #31435c; }
+body:has(.navbar) .card input, body:has(.navbar) .card select { background: #fbfdff; }
+body:has(.navbar) .btn-buscar, body:has(.navbar) .btn-primary { background: #087df5; }
+body:has(.navbar) .btn-buscar:hover, body:has(.navbar) .btn-primary:hover { background: #066bd1; }
+body:has(.navbar) .btn-success { background: #20ad52; }
+body:has(.navbar) .btn-success:hover { background: #198f43; }
+body:has(.navbar) table th { background: #edf4f8; color: #506b87; }
+body:has(.navbar) table tr:hover td { background: #f3faf8; }
+
+@media (max-width: 900px) {
+  body:has(.navbar) .navbar-center { background: transparent; border: 0; }
+  body:has(.navbar) .navbar-center .nav-tabs a { background: #eef5fa; }
+  body:has(.navbar) .navbar-center .nav-tabs a.active { background: #e4f5ef; }
+}
+
+/* Acceso */
+body.login-body { background: #f5f7fc !important; }
+body.login-body::before { background-size: 900px auto; opacity: .07 !important; }
+body.login-body .login-container { max-width: 490px; padding: 20px; }
+body.login-body .login-card { padding: 37px 45px 36px; border-radius: 13px; box-shadow: 0 9px 24px rgba(37, 52, 77, .13); }
+body.login-body .login-card .institution-mark { margin-bottom: 14px; }
+body.login-body .login-title { font-size: 17px; line-height: 1.3; }
+body.login-body .input-group { display: block; padding: 0; border: 0; background: transparent; }
+body.login-body .input-group i { display: none; }
+body.login-body .input-group input { padding: 10px; border-radius: 7px; }
+body.login-body .btn { min-height: 37px; padding: 9px; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .navbar { flex-wrap: wrap; padding: 12px 16px; }
+  .navbar-left { min-width: 0; }
+  .navbar-center { order: 3; width: 100%; overflow-x: auto; text-align: left; }
+  .navbar-right .btn-small { width: auto; }
+  .main-content { padding: 16px; }
+  .usuarios-layout { grid-template-columns: 1fr; }
 }
 

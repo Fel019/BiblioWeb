@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <meta charset="UTF-8">
   <title>Iniciar Sesión | BiblioWeb</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="estilos.css">
   <style>
     body {
       background: #f4f6fb;
@@ -105,9 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
   </style>
 </head>
-<body>
+<body class="login-body">
   <div class="login-card">
-    <h2><i class="fa-solid fa-book"></i> BiblioWeb</h2>
+    <img class="institution-mark" src="assets/escudo-institucional.png" alt="Escudo del Colegio Parroquial Nuestra Señora de los Andes">
+    <h2 class="login-title">Biblioteca Colegio Parroquial<br>Nuestra Señora de los Andes</h2>
     <form method="POST">
       <?php if (!empty($error)): ?>
         <div class="error"><?php echo $error; ?></div>

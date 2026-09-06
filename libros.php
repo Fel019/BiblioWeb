@@ -217,10 +217,10 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="navbar-left">
 
-        <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
+        <img class="navbar-logo" src="assets/Llanoverde.png" alt="Escudo institucional">
 
         <span class="navbar-title">
-            Colegio Parroquial Nuestra Señora de los Andes
+            Institución Educativa Llano Verde Sede Calimio
         </span>
 
     </div>

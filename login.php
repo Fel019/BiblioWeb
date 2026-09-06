@@ -108,8 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body class="login-body">
   <div class="login-card">
-    <img class="institution-mark" src="assets/escudo-institucional.png" alt="Escudo del Colegio Parroquial Nuestra Señora de los Andes">
-    <h2 class="login-title">Biblioteca Colegio Parroquial<br>Nuestra Señora de los Andes</h2>
+    <img class="institution-mark" src="assets/Llanoverde.png" alt="Escudo de la Institución Educativa Llano Verde Sede Calimio">
+    <h2 class="login-title">Biblioteca Institución Educativa<br>Llano Verde Sede Calimio</h2>
     <form method="POST">
       <?php if (!empty($error)): ?>
         <div class="error"><?php echo $error; ?></div>

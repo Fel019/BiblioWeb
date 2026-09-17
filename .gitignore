@@ -1,0 +1,10 @@
+# Configuración y secretos por ambiente
+.env
+.env.*
+!.env.example
+.biblio-env.php
+*.local.php
+
+# Respaldos y registros generados localmente
+database/backups/
+logs/

@@ -126,7 +126,7 @@ $prestamos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="portal-user portal-loans">
   <header class="portal-topbar">
-    <a class="portal-brand" href="index.php"><img src="assets/escudo-institucional.png" alt=""><span>Colegio Parroquial<br>Nuestra Señora de los Andes</span></a>
+    <a class="portal-brand" href="index.php"><img src="assets/Llanoverde.png" alt=""><span>Institución Educativa<br>Llano Verde Sede Calimio</span></a>
     <nav class="portal-links" aria-label="Navegación principal">
       <a href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
       <a href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>

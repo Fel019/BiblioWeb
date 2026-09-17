@@ -10,7 +10,7 @@
     <div class="login-card">
       <h2>⛔ Acceso Denegado</h2>
       <p>No tienes permisos para acceder a esta página.</p>
-      <a href="dashboard.php" class="btn btn-primary">Volver al Inicio</a>
+      <a href="index.php" class="btn btn-primary">Volver al Inicio</a>
     </div>
   </div>
 </body>

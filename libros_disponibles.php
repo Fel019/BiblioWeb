@@ -118,7 +118,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="portal-user portal-catalog">
   <header class="portal-topbar">
-    <a class="portal-brand" href="index.php"><img src="assets/escudo-institucional.png" alt=""><span>Colegio Parroquial<br>Nuestra Señora de los Andes</span></a>
+    <a class="portal-brand" href="index.php"><img src="assets/Llanoverde.png" alt=""><span>Institución Educativa<br>Llano Verde Sede Calimio</span></a>
     <nav class="portal-links" aria-label="Navegación principal">
       <a href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
       <a class="active" href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>
@@ -128,7 +128,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </header>
   <div class="container">
     <section class="catalog-user-heading">
-      <img src="assets/escudo-institucional.png" alt="Escudo institucional">
+      <img src="assets/Llanoverde.png" alt="Escudo institucional">
       <div>
         <h2><i class="fa-solid fa-book-open-reader"></i> Libros disponibles</h2>
         <p>Explora con calma y elige una categoría para encontrar una lectura que te guste.</p>

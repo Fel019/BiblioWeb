@@ -92,8 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
 
 <header class="navbar">
   <div class="navbar-left">
-      <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
-      <span class="navbar-title">Colegio Parroquial Nuestra Señora de los Andes</span>
+      <img class="navbar-logo" src="assets/Llanoverde.png" alt="Escudo institucional">
+      <span class="navbar-title">Institución Educativa Llano Verde Sede Calimio</span>
   </div>
 
   <div class="navbar-center">

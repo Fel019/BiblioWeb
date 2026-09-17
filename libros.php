@@ -198,7 +198,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Gestión de Libros | BiblioSys</title>
 
     <link rel="stylesheet"
-          href="estilos.css">
+          href="estilos.css?v=20260916">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

@@ -672,7 +672,7 @@ body.portal-user, body.login-body {
 }
 body.portal-user::before, body.login-body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; opacity: 1 !important;
-  background: url('assets/escudo-institucional.png') center/520px auto no-repeat;
+  background: url('assets/Llanoverde.png') center/520px auto no-repeat;
   opacity: .075 !important;
 }
 .portal-card, body.portal-user .container, body.portal-user .contenedor {
@@ -838,7 +838,7 @@ body:has(.navbar) .navbar-right .btn-small:hover { background: #d94b56; }
 body:has(.navbar) .navbar + .main-content {
   min-height: 100vh; margin-left: 232px; padding: 94px 28px 30px; gap: 16px;
   display: grid; align-content: start;
-  background-color: #f4f7fb; background-image: url('assets/escudo-institucional.png');
+  background-color: #f4f7fb; background-image: url('assets/Llanoverde.png');
   background-repeat: no-repeat; background-position: center 67%; background-size: min(34vw, 440px);
   background-attachment: fixed; background-blend-mode: luminosity; position: relative;
 }

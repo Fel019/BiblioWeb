@@ -1,0 +1,27 @@
+# Copiar este archivo a C:/xampp/apache/conf/extra/ y añadir un Include desde
+# httpd-vhosts.conf. Sustituir los marcadores por secretos locales, no por
+# valores que vayan a Git.
+
+<VirtualHost *:80>
+    ServerName biblioweb-pruebas.local
+    DocumentRoot "C:/xampp/htdocs/BiblioWeb"
+    SetEnv APP_ENV testing
+    SetEnv DB_HOST 127.0.0.1
+    SetEnv DB_NAME biblioweb_pruebas
+    SetEnv DB_USER biblioweb_pruebas_app
+    SetEnv DB_PASSWORD CAMBIAR_SECRETO_PRUEBAS
+    ErrorLog "logs/biblioweb-pruebas-error.log"
+    CustomLog "logs/biblioweb-pruebas-access.log" common
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName biblioweb-produccion.local
+    DocumentRoot "C:/xampp/htdocs/BiblioWeb"
+    SetEnv APP_ENV production
+    SetEnv DB_HOST 127.0.0.1
+    SetEnv DB_NAME biblioweb_produccion
+    SetEnv DB_USER biblioweb_produccion_app
+    SetEnv DB_PASSWORD CAMBIAR_SECRETO_PRODUCCION
+    ErrorLog "logs/biblioweb-produccion-error.log"
+    CustomLog "logs/biblioweb-produccion-access.log" common
+</VirtualHost>

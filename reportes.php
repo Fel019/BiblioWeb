@@ -86,14 +86,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
   <title>Reportes | BiblioWeb</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css?v=20260916">
 </head>
 <body>
 
 <header class="navbar">
   <div class="navbar-left">
-      <img class="navbar-logo" src="assets/escudo-institucional.png" alt="Escudo institucional">
-      <span class="navbar-title">Colegio Parroquial Nuestra Señora de los Andes</span>
+      <img class="navbar-logo" src="assets/Llanoverde.png" alt="Escudo institucional">
+      <span class="navbar-title">Institución Educativa Llano Verde Sede Calimio</span>
   </div>
 
   <div class="navbar-center">

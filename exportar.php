@@ -11,7 +11,7 @@ if (!isset($_SESSION['usuario'])) {
 <head>
   <meta charset="UTF-8">
   <title>Exportar Reportes | BiblioSys</title>
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css?v=20260916">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>

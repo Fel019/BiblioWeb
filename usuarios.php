@@ -218,7 +218,7 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
 
     <link
         rel="stylesheet"
-        href="estilos.css"
+        href="estilos.css?v=20260916"
     >
 
     <link

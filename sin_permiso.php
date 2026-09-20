@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Acceso Denegado</title>
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css?v=20260916">
 </head>
 <body class="login-body">
   <div class="login-container">

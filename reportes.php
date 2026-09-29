@@ -25,6 +25,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
 
     if ($tipo && $inicio && $fin) {
         try {
+            foreach ([$inicio, $fin] as $fecha) {
+                $fechaValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $fecha);
+                if (!$fechaValidada || $fechaValidada->format('Y-m-d') !== $fecha) {
+                    throw new InvalidArgumentException('Selecciona fechas válidas.');
+                }
+            }
+            if ($inicio > $fin) {
+                throw new InvalidArgumentException('La fecha inicial no puede ser posterior a la fecha final.');
+            }
             // ====== REPORTES ======
             if ($tipo === "libros") {
                 $sql = "SELECT id AS ID, titulo AS TÍTULO, autor AS AUTOR, categoria AS CATEGORÍA,
@@ -44,8 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
                 $sql = "SELECT p.id AS ID,
                                u.nombre AS USUARIO,
                                l.titulo AS LIBRO,
+                               p.cantidad AS EJEMPLARES,
                                p.fecha_prestamo AS FECHA_PRÉSTAMO,
                                p.fecha_devolucion AS FECHA_DEVOLUCIÓN,
+                               p.fecha_devolucion_real AS DEVOLUCIÓN_REAL,
                                p.estado AS ESTADO
                         FROM prestamos p
                         INNER JOIN usuarios u ON p.usuario_id = u.id
@@ -69,8 +80,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
                 $paginaActual = min($paginaActual, $totalPaginas);
                 $resultados = array_slice($resultados, ($paginaActual - 1) * $porPagina, $porPagina);
             }
+        } catch (InvalidArgumentException $e) {
+            $mensaje = '⚠️ ' . $e->getMessage();
         } catch (PDOException $e) {
-            $mensaje = "❌ Error al generar reporte: " . $e->getMessage();
+            error_log('BiblioWeb: error al generar reporte: ' . $e->getMessage());
+            $mensaje = '❌ No fue posible generar el reporte.';
         }
     } else {
         $mensaje = "⚠️ Parámetros incompletos.";
@@ -173,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
             <?php foreach ($resultados as $fila): ?>
               <tr>
                 <?php foreach ($fila as $valor): ?>
-                  <td><?php echo htmlspecialchars($valor); ?></td>
+                  <td><?php echo htmlspecialchars((string) ($valor ?? '')); ?></td>
                 <?php endforeach; ?>
               </tr>
             <?php endforeach; ?>
@@ -186,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tipo'])) {
             <?php if ($paginaActual < $totalPaginas): ?><a href="reportes.php?<?php echo http_build_query(['tipo' => $_GET['tipo'], 'inicio' => $_GET['inicio'], 'fin' => $_GET['fin'], 'pagina' => $paginaActual + 1]); ?>">Siguiente</a><?php endif; ?>
           </nav>
         <?php endif; ?>
-      <?php else: ?>
+      <?php elseif (!$mensaje): ?>
         <p>⚠️ No se encontraron resultados.</p>
       <?php endif; ?>
     </div>

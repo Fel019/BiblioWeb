@@ -1,4 +1,6 @@
 <?php
+require __DIR__ . '/verificar_rol.php';
+verificarRol(['administrador', 'bibliotecario']);
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/conexion.php';
 
@@ -22,8 +24,17 @@ try {
     $fi    = param(['fecha_inicio','inicio','desde']);
     $ff    = param(['fecha_fin','fin','hasta']);
 
-    $fi = $fi ? date('Y-m-d', strtotime($fi)) : '1900-01-01';
-    $ff = $ff ? date('Y-m-d', strtotime($ff)) : '2100-12-31';
+    $fi = $fi ?: '1900-01-01';
+    $ff = $ff ?: '2100-12-31';
+    foreach ([$fi, $ff] as $fecha) {
+        $fechaValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $fecha);
+        if (!$fechaValidada || $fechaValidada->format('Y-m-d') !== $fecha) {
+            throw new InvalidArgumentException('Selecciona fechas válidas.');
+        }
+    }
+    if ($fi > $ff) {
+        throw new InvalidArgumentException('La fecha inicial no puede ser posterior a la fecha final.');
+    }
 
     // --- Consulta según tipo ---
     switch ($tipo) {
@@ -31,8 +42,10 @@ try {
             $sql = "SELECT p.id            AS ID,
                            u.nombre        AS Usuario,
                            l.titulo        AS Libro,
+                           p.cantidad      AS Ejemplares,
                            p.fecha_prestamo AS 'Fecha préstamo',
                            p.fecha_devolucion AS 'Fecha devolución',
+                           p.fecha_devolucion_real AS 'Devolución real',
                            p.estado        AS Estado
                     FROM prestamos p
                     INNER JOIN usuarios u ON u.id = p.usuario_id
@@ -149,5 +162,5 @@ try {
     exit;
 
 } catch (Exception $e) {
-    echo "Error al generar informe: ".$e->getMessage();
+    echo "Error al generar informe: ".htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
 }

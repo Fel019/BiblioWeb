@@ -34,26 +34,33 @@ if (!$usuario) {
 
 // 🔹 Guardamos cambios al enviar el formulario
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
-    $rol = $_POST['rol'];
-    $estado = $_POST['estado'];
+    $nombre = trim($_POST['nombre'] ?? '');
+    $correo = trim($_POST['correo'] ?? '');
+    $rol = $_POST['rol'] ?? '';
+    $estado = $_POST['estado'] ?? '';
+    $rolesValidos = ['alumno', 'profesor', 'administrativo', 'bibliotecario', 'administrador'];
 
-    $sql = "UPDATE usuarios 
-            SET nombre = :nombre, correo = :correo, rol = :rol, estado = :estado 
-            WHERE id = :id";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([
-        ':nombre' => $nombre,
-        ':correo' => $correo,
-        ':rol' => $rol,
-        ':estado' => $estado,
-        ':id' => $id
-    ]);
-
-    echo "<script>alert('✅ Usuario actualizado correctamente'); window.location='usuarios.php';</script>";
-    exit;
+    if ($nombre === '' || !filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Escribe un nombre y un correo electrónico válido.';
+    } elseif (!in_array($rol, $rolesValidos, true) || !in_array($estado, ['activo', 'inactivo'], true)) {
+        $error = 'Selecciona un rol y un estado válidos.';
+    } else {
+        try {
+            $check = $conn->prepare('SELECT COUNT(*) FROM usuarios WHERE correo = :correo AND id <> :id');
+            $check->execute([':correo' => $correo, ':id' => $id]);
+            if ($check->fetchColumn() > 0) {
+                $error = 'El correo ya está registrado por otro usuario.';
+            } else {
+                $stmt = $conn->prepare('UPDATE usuarios SET nombre = :nombre, correo = :correo, rol = :rol, estado = :estado WHERE id = :id');
+                $stmt->execute([':nombre' => $nombre, ':correo' => $correo, ':rol' => $rol, ':estado' => $estado, ':id' => $id]);
+                header('Location: usuarios.php?mensaje=actualizado');
+                exit;
+            }
+        } catch (PDOException $e) {
+            $error = $e->getCode() === '23000' ? 'El correo ya está registrado por otro usuario.' : 'No fue posible actualizar el usuario.';
+        }
+    }
+    $usuario = array_merge($usuario, ['nombre' => $nombre, 'correo' => $correo, 'rol' => $rol, 'estado' => $estado]);
 }
 ?>
 
@@ -172,6 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
   <div class="card">
     <h2><i class="fa-solid fa-pen-to-square"></i>Editar Usuario</h2>
+    <?php if (!empty($error)): ?>
+      <p role="alert"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
+    <?php endif; ?>
     <form method="POST">
       <label>Nombre:</label>
       <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
@@ -181,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       <label>Rol:</label>
       <select name="rol" required>
-        <option value="estudiante" <?php if($usuario['rol']=='estudiante') echo 'selected'; ?>>Estudiante</option>
+        <option value="alumno" <?php if($usuario['rol']=='alumno') echo 'selected'; ?>>Estudiante</option>
         <option value="profesor" <?php if($usuario['rol']=='profesor') echo 'selected'; ?>>Profesor</option>
         <option value="administrativo" <?php if($usuario['rol']=='administrativo') echo 'selected'; ?>>Administrativo</option>
         <option value="bibliotecario" <?php if($usuario['rol']=='bibliotecario') echo 'selected'; ?>>Bibliotecario</option>

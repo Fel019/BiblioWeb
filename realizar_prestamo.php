@@ -343,7 +343,7 @@ if ($categoriaSeleccionada !== '') {
             type="number"
             name="cantidad"
             min="1"
-            value="1"
+            value="<?php echo max(1, (int) ($_POST['cantidad'] ?? 1)); ?>"
             required
         >
 
@@ -359,9 +359,13 @@ if ($categoriaSeleccionada !== '') {
         </div>
 
 
+        <?php if ($categoriaSeleccionada !== '' && !$libros): ?>
+            <p role="status">No hay ejemplares disponibles en esta categoría. Selecciona otra categoría.</p>
+        <?php endif; ?>
         <button
             type="submit"
             class="btn btn-success"
+            <?php echo !$libros ? 'disabled' : ''; ?>
         >
 
             <i class="fa-solid fa-plus"></i>

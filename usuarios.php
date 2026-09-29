@@ -146,13 +146,14 @@ $rolFiltro = trim($_GET['rol'] ?? '');
 $stmtConteoRoles = $conn->query("SELECT rol, COUNT(*) AS total FROM usuarios GROUP BY rol");
 $conteoRoles = $stmtConteoRoles->fetchAll(PDO::FETCH_KEY_PAIR);
 
-if (!empty($_GET['q'])) {
+if (trim($_GET['q'] ?? '') !== '') {
 
     $q = "%" . trim($_GET['q']) . "%";
 
-    $condiciones[] = "(nombre LIKE :q OR correo LIKE :q)";
+    $condiciones[] = "(nombre LIKE :nombre_busqueda OR correo LIKE :correo_busqueda)";
 
-    $params[':q'] = $q;
+    $params[':nombre_busqueda'] = $q;
+    $params[':correo_busqueda'] = $q;
 }
 
 if (in_array($rolFiltro, $rolesDisponibles, true)) {
@@ -400,6 +401,9 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
 
 
+            <?php if (($_GET['mensaje'] ?? '') === 'actualizado'): ?>
+                <div class="alert alert-success">✅ Usuario actualizado correctamente.</div>
+            <?php endif; ?>
             <?php if (isset($_GET['mensaje']) && $_GET['mensaje'] === 'registrado'): ?>
 
                 <div class="alert alert-success">

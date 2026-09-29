@@ -12,23 +12,38 @@ $stmtCategorias = $conn->query("SELECT categoria, COUNT(*) AS total FROM libros 
 $categorias = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 
 $categoriaSeleccionada = trim($_GET['categoria'] ?? '');
+$busqueda = trim($_GET['q'] ?? '');
 $categoriasValidas = array_column($categorias, 'categoria');
 
 // La primera categoría sirve como punto de inicio si no se ha elegido una aún.
-if ($categoriaSeleccionada === '' && !empty($categoriasValidas)) {
+if (!isset($_GET['categoria']) && $busqueda === '' && !empty($categoriasValidas)) {
   $categoriaSeleccionada = $categoriasValidas[0];
 }
 
-if (!in_array($categoriaSeleccionada, $categoriasValidas, true)) {
-  $categoriaSeleccionada = $categoriasValidas[0] ?? '';
+if ($categoriaSeleccionada !== '' && !in_array($categoriaSeleccionada, $categoriasValidas, true)) {
+  $categoriaSeleccionada = '';
 }
+
+$condiciones = [];
+$parametros = [];
+if ($categoriaSeleccionada !== '') {
+  $condiciones[] = 'categoria = :categoria';
+  $parametros[':categoria'] = $categoriaSeleccionada;
+}
+if ($busqueda !== '') {
+  $condiciones[] = '(titulo LIKE :titulo_busqueda OR autor LIKE :autor_busqueda OR isbn LIKE :isbn_busqueda)';
+  $parametros[':titulo_busqueda'] = '%' . $busqueda . '%';
+  $parametros[':autor_busqueda'] = '%' . $busqueda . '%';
+  $parametros[':isbn_busqueda'] = '%' . $busqueda . '%';
+}
+$where = $condiciones ? 'WHERE ' . implode(' AND ', $condiciones) : '';
 
 // Se muestran máximo 20 libros dentro de una categoría por página.
 $porPagina = 20;
 $paginaActual = max(1, (int) ($_GET['pagina'] ?? 1));
 
-$contador = $conn->prepare("SELECT COUNT(*) FROM libros WHERE categoria = :categoria");
-$contador->execute([':categoria' => $categoriaSeleccionada]);
+$contador = $conn->prepare("SELECT COUNT(*) FROM libros $where");
+$contador->execute($parametros);
 $totalLibros = (int) $contador->fetchColumn();
 $totalPaginas = max(1, (int) ceil($totalLibros / $porPagina));
 $paginaActual = min($paginaActual, $totalPaginas);
@@ -36,10 +51,12 @@ $offset = ($paginaActual - 1) * $porPagina;
 
 $stmt = $conn->prepare("SELECT id, titulo, autor, categoria, disponible
                         FROM libros
-                        WHERE categoria = :categoria
+                        $where
                         ORDER BY titulo ASC
                         LIMIT :limite OFFSET :offset");
-$stmt->bindValue(':categoria', $categoriaSeleccionada, PDO::PARAM_STR);
+foreach ($parametros as $nombreParametro => $valorParametro) {
+  $stmt->bindValue($nombreParametro, $valorParametro, PDO::PARAM_STR);
+}
 $stmt->bindValue(':limite', $porPagina, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
@@ -49,6 +66,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📚 Libros Disponibles | BiblioWeb</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="estilos.css?v=20260916">
@@ -114,6 +132,12 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
       font-weight: 600;
       color: #555;
     }
+    body.portal-catalog .catalog-selector input[type="search"] {
+      width: 100%; box-sizing: border-box; padding: 10px 11px;
+      border: 1px solid #bcd4df; border-radius: 7px; font: inherit;
+    }
+    body.portal-catalog .catalog-selector label[for="q"] { margin-top: 12px; }
+    body.portal-catalog .catalog-selector button { margin-top: 10px; border: 0; cursor: pointer; }
   </style>
 </head>
 <body class="portal-user portal-catalog">
@@ -139,12 +163,16 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <form method="GET" action="libros_disponibles.php">
         <label for="categoria"><i class="fa-solid fa-compass"></i> ¿Qué te gustaría leer hoy?</label>
         <select id="categoria" name="categoria" onchange="this.form.submit()">
+          <option value="" <?php echo $categoriaSeleccionada === '' ? 'selected' : ''; ?>>Todas las categorías</option>
           <?php foreach ($categorias as $categoria): ?>
             <option value="<?php echo htmlspecialchars($categoria['categoria']); ?>" <?php echo $categoria['categoria'] === $categoriaSeleccionada ? 'selected' : ''; ?>>
               <?php echo htmlspecialchars($categoria['categoria']); ?> (<?php echo (int) $categoria['total']; ?>)
             </option>
           <?php endforeach; ?>
         </select>
+        <label for="q">Buscar por título, autor o ISBN</label>
+        <input id="q" name="q" type="search" placeholder="Título, autor o ISBN..." value="<?php echo htmlspecialchars($busqueda, ENT_QUOTES, 'UTF-8'); ?>">
+        <button type="submit" class="btn">Buscar</button>
       </form>
       <span><i class="fa-solid fa-layer-group"></i> <?php echo array_sum(array_column($categorias, 'total')); ?> títulos en el catálogo</span>
     </div>
@@ -153,7 +181,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="category-heading">
           <div>
             <span class="eyebrow">Explorando categoría</span>
-            <h3><?php echo htmlspecialchars($categoriaSeleccionada); ?></h3>
+            <h3><?php echo htmlspecialchars($categoriaSeleccionada === '' ? 'Todas las categorías' : $categoriaSeleccionada); ?></h3>
           </div>
           <span class="results-count"><?php echo $totalLibros; ?> libro<?php echo $totalLibros === 1 ? '' : 's'; ?></span>
         </div>
@@ -184,7 +212,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr><td colspan="5">❌ No hay libros registrados</td></tr>
+          <tr><td colspan="5">No se encontraron libros con estos filtros.</td></tr>
         <?php endif; ?>
       </tbody>
         </table>
@@ -192,11 +220,11 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php if ($totalPaginas > 1): ?>
           <nav class="catalog-pagination" aria-label="Paginación de libros">
             <?php if ($paginaActual > 1): ?>
-              <a href="libros_disponibles.php?categoria=<?php echo urlencode($categoriaSeleccionada); ?>&pagina=<?php echo $paginaActual - 1; ?>"><i class="fa-solid fa-arrow-left"></i> Anterior</a>
+              <a href="libros_disponibles.php?<?php echo htmlspecialchars(http_build_query(['categoria' => $categoriaSeleccionada, 'q' => $busqueda, 'pagina' => $paginaActual - 1]), ENT_QUOTES, 'UTF-8'); ?>"><i class="fa-solid fa-arrow-left"></i> Anterior</a>
             <?php endif; ?>
             <span>Página <?php echo $paginaActual; ?> de <?php echo $totalPaginas; ?> · 20 libros por página</span>
             <?php if ($paginaActual < $totalPaginas): ?>
-              <a href="libros_disponibles.php?categoria=<?php echo urlencode($categoriaSeleccionada); ?>&pagina=<?php echo $paginaActual + 1; ?>">Siguiente <i class="fa-solid fa-arrow-right"></i></a>
+              <a href="libros_disponibles.php?<?php echo htmlspecialchars(http_build_query(['categoria' => $categoriaSeleccionada, 'q' => $busqueda, 'pagina' => $paginaActual + 1]), ENT_QUOTES, 'UTF-8'); ?>">Siguiente <i class="fa-solid fa-arrow-right"></i></a>
             <?php endif; ?>
           </nav>
         <?php endif; ?>

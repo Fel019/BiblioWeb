@@ -384,12 +384,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'Otros'
                 ];
 
+                $categoriasExistentes = $conn->query("SELECT DISTINCT categoria FROM libros ORDER BY categoria ASC")->fetchAll(PDO::FETCH_COLUMN);
+                $categorias = array_values(array_unique(array_merge($categorias, $categoriasExistentes, [$libro['categoria']])));
+                sort($categorias, SORT_NATURAL | SORT_FLAG_CASE);
                 foreach ($categorias as $categoria):
 
                 ?>
 
                     <option
-                        value="<?php echo $categoria; ?>"
+                        value="<?php echo htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8'); ?>"
                         <?php
                         echo
                             $libro['categoria'] === $categoria
@@ -397,7 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             : '';
                         ?>
                     >
-                        <?php echo $categoria; ?>
+                        <?php echo htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8'); ?>
                     </option>
 
                 <?php endforeach; ?>

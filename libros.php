@@ -130,13 +130,15 @@ $stmtCategorias = $conn->query("SELECT categoria, COUNT(*) AS total FROM libros 
 $categoriasFiltro = $stmtCategorias->fetchAll(PDO::FETCH_ASSOC);
 $categoriaFiltro = trim($_GET['categoria'] ?? '');
 
-if (!empty($_GET['q'])) {
+if (trim($_GET['q'] ?? '') !== '') {
 
     $busqueda = trim($_GET['q']);
 
-    $condiciones[] = "(titulo LIKE :q OR autor LIKE :q OR isbn LIKE :q)";
+    $condiciones[] = "(titulo LIKE :titulo_busqueda OR autor LIKE :autor_busqueda OR isbn LIKE :isbn_busqueda)";
 
-    $params[':q'] = "%" . $busqueda . "%";
+    $params[':titulo_busqueda'] = "%" . $busqueda . "%";
+    $params[':autor_busqueda'] = "%" . $busqueda . "%";
+    $params[':isbn_busqueda'] = "%" . $busqueda . "%";
 }
 
 if ($categoriaFiltro !== '') {

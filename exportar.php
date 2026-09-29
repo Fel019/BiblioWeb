@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once 'verificar_rol.php';
+verificarRol(['administrador', 'bibliotecario']);
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit;

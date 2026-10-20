@@ -14,7 +14,7 @@ if (!isset($_SESSION['usuario'])) {
   <meta charset="UTF-8">
   <title>Inicio | BiblioWeb</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="estilos.css?v=identidad20261019">
   <style>
     body {
       background: #f4f6fb;
@@ -54,7 +54,7 @@ if (!isset($_SESSION['usuario'])) {
 </head>
 <body class="portal-user portal-home">
   <header class="portal-topbar">
-    <a class="portal-brand" href="index.php"><img src="assets/escudo-institucional.png" alt=""><span>Colegio Parroquial<br>Nuestra Señora de los Andes</span></a>
+    <a class="portal-brand" href="index.php"><img src="assets/Llanoverde.png" alt=""><span>Institución Educativa<br>Llano Verde Sede Calimio Decepaz</span></a>
     <nav class="portal-links" aria-label="Navegación principal">
       <a class="active" href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
       <a href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>
@@ -63,8 +63,8 @@ if (!isset($_SESSION['usuario'])) {
     </nav>
   </header>
   <div class="container">
-    <img class="institution-mark" src="assets/escudo-institucional.png" alt="Escudo del Colegio Parroquial Nuestra Señora de los Andes">
-    <p class="institution-name">Biblioteca Colegio Parroquial<br>Nuestra Señora de los Andes</p>
+    <img class="institution-mark" src="assets/Llanoverde.png" alt="Escudo de la Institución Educativa Llano Verde Sede Calimio Decepaz">
+    <p class="institution-name">Biblioteca Institución Educativa<br>Llano Verde Sede Calimio Decepaz</p>
     <h1>👋 Bienvenido, <?php echo $_SESSION['usuario']; ?>!</h1>
     <p class="rol">Tu rol actual es: <b><?php echo ucfirst($_SESSION['rol']); ?></b></p>
 

@@ -262,7 +262,7 @@ if ($categoriaSeleccionada !== '') {
 
 <body class="portal-user portal-loan-form">
 <header class="portal-topbar">
-  <a class="portal-brand" href="index.php"><img src="assets/Llanoverde.png" alt=""><span>Institución Educativa<br>Llano Verde Sede Calimio Decepaz</span></a>
+  <a class="portal-brand" href="index.php"><img src="assets/Llanoverde.png" alt=""><span>Institución Educativa<br>Llano Verde Sede Calimio Desepaz</span></a>
   <nav class="portal-links" aria-label="Navegación principal">
     <a href="index.php" title="Inicio"><i class="fa-solid fa-house"></i><span> Inicio</span></a>
     <a href="libros_disponibles.php" title="Catálogo"><i class="fa-solid fa-book-open"></i><span> Catálogo</span></a>

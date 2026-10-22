@@ -220,7 +220,7 @@ $libros = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <img class="navbar-logo" src="assets/Llanoverde.png" alt="Escudo institucional">
 
         <span class="navbar-title">
-            Institución Educativa Llano Verde Sede Calimio Decepaz
+            Institución Educativa Llano Verde Sede Calimio Desepaz
         </span>
 
     </div>
